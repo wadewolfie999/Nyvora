@@ -1,0 +1,4 @@
+interface:
+  display_name: "Node Control Access"
+  short_description: "Manage scoped human and machine identities"
+  default_prompt: "Use $node-control-access to plan an exact Node Control identity or credential lifecycle without exposing secrets."

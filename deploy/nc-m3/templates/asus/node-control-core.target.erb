@@ -1,0 +1,8 @@
+[Unit]
+Description=Node Control rootless control core
+Wants=nc-postgres.service nc-nats.service nc-controller.service nc-langgraph.service
+Wants=nc-authentik-server.service nc-authentik-worker.service
+After=network-online.target
+
+[Install]
+WantedBy=default.target

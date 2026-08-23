@@ -1,0 +1,36 @@
+api_version: nodecontrol.io/v1alpha1
+kind: PlacementProfile
+metadata:
+  name: vps-core
+spec:
+  description: Public edge and complete control core on vps-node.
+  fixed_services:
+    vps-node:
+      - caddy
+      - frps
+      - edge-probe
+      - controller
+      - portal
+      - postgres
+      - nats
+      - authentik-server
+      - authentik-worker
+      - langgraph
+    asus-node:
+      - node-agent
+    mac-node:
+      - operator-cli
+      - node-agent
+  public_tcp_ports:
+    vps-node: [22, 80, 443]
+    asus-node: []
+    mac-node: []
+  selection_preconditions:
+    - vps_authenticated_recovery_path_verified
+    - vps_cgroup_v2_and_rootless_podman_verified
+    - vps_free_memory_exceeds_measured_core_peak_plus_reserve
+    - vps_free_storage_exceeds_measured_core_need_plus_backup_staging
+    - wildcard_dns_control_available
+  failure_semantics:
+    control_state_host: vps-node
+    automatic_failover: false

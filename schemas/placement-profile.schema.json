@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nodecontrol.local/schemas/placement-profile.schema.json",
+  "title": "PlacementProfile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "kind", "metadata", "spec"],
+  "properties": {
+    "api_version": {"const": "nodecontrol.io/v1alpha1"},
+    "kind": {"const": "PlacementProfile"},
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"enum": ["vps-core", "split-edge"]}
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["description", "fixed_services", "public_tcp_ports", "selection_preconditions", "failure_semantics"]
+    }
+  }
+}

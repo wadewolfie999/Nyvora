@@ -1,0 +1,13 @@
+.git
+.agents
+.cache
+.venv
+artifacts
+bin
+coverage
+dist
+records
+state
+tmp
+**/__pycache__
+*.pyc

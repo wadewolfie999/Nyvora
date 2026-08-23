@@ -1,0 +1,38 @@
+[Unit]
+Description=Node Control PostgreSQL
+
+[Container]
+Image=<%= postgres_image %>
+Pull=missing
+ContainerName=nc-m3-postgres
+Network=nc-m3.network
+NetworkAlias=postgres
+Volume=nc-postgres.volume:/var/lib/postgresql/data
+Volume=./initdb.sh:/docker-entrypoint-initdb.d/10-node-control.sh:ro
+Volume=%d/postgres-superuser-password:/run/secrets/postgres-superuser-password:ro
+Volume=%d/nodecontrol-db-password:/run/secrets/nodecontrol-db-password:ro
+Volume=%d/authentik-db-password:/run/secrets/authentik-db-password:ro
+Environment=POSTGRES_USER=postgres
+Environment=POSTGRES_DB=postgres
+Environment=POSTGRES_PASSWORD_FILE=/run/secrets/postgres-superuser-password
+NoNewPrivileges=true
+Memory=768m
+PidsLimit=256
+ShmSize=128m
+HealthCmd=pg_isready -U postgres -d postgres
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=5
+Label=io.nodecontrol.milestone=NC-M3
+Label=io.nodecontrol.node=asus-node
+
+[Service]
+LoadCredentialEncrypted=postgres-superuser-password:%h/.config/node-control/credentials/postgres-superuser-password.cred
+LoadCredentialEncrypted=nodecontrol-db-password:%h/.config/node-control/credentials/nodecontrol-db-password.cred
+LoadCredentialEncrypted=authentik-db-password:%h/.config/node-control/credentials/authentik-db-password.cred
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=900
+
+[Install]
+WantedBy=node-control-core.target

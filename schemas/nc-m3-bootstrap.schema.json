@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nodecontrol.local/schemas/nc-m3-bootstrap.schema.json",
+  "title": "NC-M3Bootstrap",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "kind", "metadata", "spec"],
+  "properties": {
+    "api_version": {"const": "nodecontrol.io/v1alpha1"},
+    "kind": {"const": "NC-M3Bootstrap"},
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {"name": {"const": "primary"}}
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["placement_profile", "base_domain", "operator", "age_recipients", "preconditions", "records"],
+      "properties": {
+        "placement_profile": {"const": "split-edge"},
+        "base_domain": {"type": "string", "minLength": 4, "maxLength": 253},
+        "operator": {"const": "vahid"},
+        "age_recipients": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^age1[0-9a-z]+$"}
+        },
+        "preconditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["wildcard_dns_control", "vps_provider_console_recovery", "vps_firewall_control", "asus_interactive_sudo", "age_offline_recovery_copy", "asus_42665_owner_resolved", "nats_credentials_generated"],
+          "properties": {
+            "wildcard_dns_control": {"const": true},
+            "vps_provider_console_recovery": {"const": true},
+            "vps_firewall_control": {"const": true},
+            "asus_interactive_sudo": {"const": true},
+            "age_offline_recovery_copy": {"const": true},
+            "asus_42665_owner_resolved": {"const": true},
+            "nats_credentials_generated": {"const": true}
+          }
+        },
+        "records": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dns_evidence", "recovery_evidence", "secret_custody_evidence", "nats_evidence"],
+          "properties": {
+            "dns_evidence": {"type": "string", "minLength": 1},
+            "recovery_evidence": {"type": "string", "minLength": 1},
+            "secret_custody_evidence": {"type": "string", "minLength": 1},
+            "nats_evidence": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  }
+}

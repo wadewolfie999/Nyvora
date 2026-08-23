@@ -1,0 +1,4 @@
+interface:
+  display_name: "Node Control Inspect"
+  short_description: "Observe one canonical node without changing it"
+  default_prompt: "Use $node-control-inspect to inspect one canonical node and report evidence separately from unknowns."

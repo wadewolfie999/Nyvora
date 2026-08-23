@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nodecontrol.local/schemas/operation.schema.json",
+  "title": "Operation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version", "id", "target", "mode", "scope", "expected_revision",
+    "idempotency_key", "state", "verification", "rollback"
+  ],
+  "properties": {
+    "api_version": {"const": "nodecontrol.io/v1alpha1"},
+    "id": {"type": "string", "minLength": 1},
+    "target": {"enum": ["mac-node", "vps-node", "asus-node", "staged-multi-node"]},
+    "mode": {"enum": ["OBSERVE", "PLAN", "APPLY", "DESTRUCTIVE"]},
+    "scope": {"type": "object"},
+    "expected_revision": {"type": "integer", "minimum": 0},
+    "idempotency_key": {"type": "string", "minLength": 8},
+    "state": {
+      "enum": ["proposed", "planned", "authorized", "auto-authorized", "leased", "running", "verified", "recorded", "failed", "expired", "rolled-back"]
+    },
+    "verification": {"type": "object"},
+    "rollback": {"type": "object"}
+  }
+}

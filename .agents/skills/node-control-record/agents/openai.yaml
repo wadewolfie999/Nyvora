@@ -1,0 +1,4 @@
+interface:
+  display_name: "Node Control Record"
+  short_description: "Record only verified Node Control evidence"
+  default_prompt: "Use $node-control-record to synchronize verified evidence and preserve unknowns explicitly."

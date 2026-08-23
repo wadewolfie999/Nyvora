@@ -1,0 +1,40 @@
+api_version: nodecontrol.io/v1alpha1
+kind: PlacementProfile
+metadata:
+  name: split-edge
+spec:
+  description: Public edge on vps-node and complete control core on asus-node.
+  fixed_services:
+    vps-node:
+      - caddy
+      - frps
+      - edge-probe
+    asus-node:
+      - controller
+      - portal
+      - postgres
+      - nats
+      - authentik-server
+      - authentik-worker
+      - langgraph
+      - node-agent
+    mac-node:
+      - operator-cli
+      - node-agent
+  public_tcp_ports:
+    vps-node: [22, 80, 443]
+    asus-node: []
+    mac-node: []
+  selection_preconditions:
+    - vps_authenticated_recovery_path_verified
+    - vps_edge_capacity_verified
+    - asus_authenticated_local_and_remote_recovery_paths_verified
+    - asus_cgroup_v2_and_rootless_podman_verified
+    - asus_free_memory_exceeds_measured_core_peak_plus_platform_reserve
+    - asus_free_storage_exceeds_measured_core_need_plus_backup_staging
+    - asus_to_vps_wss_verified
+    - wildcard_dns_control_available
+  failure_semantics:
+    control_state_host: asus-node
+    automatic_failover: false
+    asus_loss_effect: normal-control-plane-unavailable

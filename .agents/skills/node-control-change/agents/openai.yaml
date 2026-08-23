@@ -1,0 +1,4 @@
+interface:
+  display_name: "Node Control Change"
+  short_description: "Plan and execute one verified Node Control boundary"
+  default_prompt: "Use $node-control-change to plan or execute an explicitly authorized, canonical, reversible Node Control change."

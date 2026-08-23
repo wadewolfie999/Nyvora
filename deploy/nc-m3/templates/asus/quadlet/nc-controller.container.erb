@@ -1,0 +1,50 @@
+[Unit]
+Description=Node Control controller and portal
+After=nc-postgres.service nc-nats.service
+Requires=nc-postgres.service nc-nats.service
+
+[Container]
+Image=<%= controller_image %>
+Pull=never
+ContainerName=nc-m3-controller
+Network=nc-m3.network
+NetworkAlias=controller
+PublishPort=127.0.0.1:<%= asus_controller %>:8080
+Volume=%d/controller-nats-creds:/run/secrets/controller.creds:ro
+Volume=%d/controller-pgpass:/run/secrets/controller.pgpass:ro
+Volume=%d/controller-service-token:/run/secrets/controller-service-token:ro
+Volume=%d/controller-proxy-proof:/run/secrets/controller-proxy-proof:ro
+Environment=NODE_CONTROL_RUNTIME=live
+Environment=LISTEN_ADDR=0.0.0.0:8080
+Environment=CONTROLLER_URL=http://127.0.0.1:8080
+Environment=DATABASE_URL=postgres://nodecontrol@postgres:5432/nodecontrol?sslmode=disable
+Environment=PGPASSFILE=/run/secrets/controller.pgpass
+Environment=NATS_URL=nats://nats:4222
+Environment=NATS_CREDS_FILE=/run/secrets/controller.creds
+Environment=CONTROLLER_SERVICE_TOKEN_FILE=/run/secrets/controller-service-token
+Environment=CONTROLLER_PROXY_TOKEN_FILE=/run/secrets/controller-proxy-proof
+Environment=CONTROLLER_ALLOWED_USER=vahid
+ReadOnly=true
+ReadOnlyTmpfs=true
+NoNewPrivileges=true
+DropCapability=all
+Memory=256m
+PidsLimit=128
+HealthCmd=/usr/local/bin/infra health
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=5
+Label=io.nodecontrol.milestone=NC-M3
+Label=io.nodecontrol.node=asus-node
+
+[Service]
+LoadCredentialEncrypted=controller-nats-creds:%h/.config/node-control/credentials/controller-nats-creds.cred
+LoadCredentialEncrypted=controller-pgpass:%h/.config/node-control/credentials/controller-pgpass.cred
+LoadCredentialEncrypted=controller-service-token:%h/.config/node-control/credentials/controller-service-token.cred
+LoadCredentialEncrypted=controller-proxy-proof:%h/.config/node-control/credentials/controller-proxy-proof.cred
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=900
+
+[Install]
+WantedBy=node-control-core.target

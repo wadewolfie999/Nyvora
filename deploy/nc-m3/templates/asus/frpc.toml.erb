@@ -1,0 +1,37 @@
+serverAddr = "<%= tunnel_host %>"
+serverPort = 443
+transport.protocol = "wss"
+transport.tls.enable = true
+transport.tls.serverName = "<%= tunnel_host %>"
+transport.poolCount = 2
+transport.heartbeatInterval = 15
+transport.heartbeatTimeout = 90
+
+auth.method = "token"
+auth.additionalScopes = ["HeartBeats", "NewWorkConns"]
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "{{ .Envs.FRP_TOKEN_FILE }}"
+
+log.to = "console"
+log.level = "info"
+
+[[proxies]]
+name = "node-control-controller"
+type = "http"
+localIP = "127.0.0.1"
+localPort = <%= asus_controller %>
+customDomains = ["<%= control_host %>"]
+
+[[proxies]]
+name = "node-control-authentik"
+type = "http"
+localIP = "127.0.0.1"
+localPort = <%= asus_authentik %>
+customDomains = ["<%= auth_host %>"]
+
+[[proxies]]
+name = "node-control-nats-websocket"
+type = "http"
+localIP = "127.0.0.1"
+localPort = <%= asus_nats_websocket %>
+customDomains = ["<%= bus_host %>"]

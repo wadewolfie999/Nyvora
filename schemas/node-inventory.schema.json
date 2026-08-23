@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nodecontrol.local/schemas/node-inventory.schema.json",
+  "title": "NodeInventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "kind", "metadata", "spec"],
+  "properties": {
+    "api_version": {"const": "nodecontrol.io/v1alpha1"},
+    "kind": {"const": "NodeInventory"},
+    "metadata": {
+      "type": "object",
+      "required": ["name", "owner", "last_reviewed"]
+    },
+    "spec": {
+      "type": "object",
+      "required": ["canonical_nodes", "legacy_identifiers", "placement", "flows"],
+      "properties": {
+        "canonical_nodes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mac-node", "vps-node", "asus-node"],
+          "properties": {
+            "mac-node": {"$ref": "#/$defs/node"},
+            "vps-node": {"$ref": "#/$defs/node"},
+            "asus-node": {"$ref": "#/$defs/node"}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "required": ["platform", "roles", "account_mapping", "access", "verification_status"]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nodecontrol.local/schemas/agent-task.schema.json",
+  "title": "AgentTask",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "id", "project_id", "target", "mode", "sandbox", "artifacts"],
+  "properties": {
+    "api_version": {"const": "nodecontrol.io/v1alpha1"},
+    "id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "target": {"enum": ["mac-node", "vps-node", "asus-node"]},
+    "mode": {"enum": ["read-only", "patch-artifact"]},
+    "sandbox": {
+      "type": "object",
+      "required": ["rootless", "persistent_auth", "host_socket", "network_policy"]
+    },
+    "artifacts": {"type": "array", "items": {"type": "string"}}
+  }
+}

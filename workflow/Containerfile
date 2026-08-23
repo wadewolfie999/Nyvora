@@ -1,0 +1,8 @@
+FROM docker.io/library/python@sha256:ffb752e139c0a19692a43af8d8523b274222dd68eebad5d583b45c2201c6e30a
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /app
+COPY workflow/requirements.lock ./requirements.lock
+RUN python -m pip install --no-cache-dir --requirement requirements.lock
+COPY workflow/app.py ./app.py
+EXPOSE 8081
+ENTRYPOINT ["python", "/app/app.py"]

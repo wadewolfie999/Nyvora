@@ -1,0 +1,33 @@
+[Unit]
+Description=Node Control NATS JetStream
+
+[Container]
+Image=<%= nats_image %>
+Pull=missing
+ContainerName=nc-m3-nats
+Network=nc-m3.network
+NetworkAlias=nats
+Volume=nc-nats.volume:/data
+Volume=./nats-server.conf:/etc/nats/nats-server.conf:ro
+PublishPort=127.0.0.1:<%= asus_nats_websocket %>:8080
+Exec=-c /etc/nats/nats-server.conf
+ReadOnly=true
+ReadOnlyTmpfs=true
+NoNewPrivileges=true
+DropCapability=all
+Memory=384m
+PidsLimit=128
+HealthCmd=wget -q -O /dev/null http://127.0.0.1:8222/healthz
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=5
+Label=io.nodecontrol.milestone=NC-M3
+Label=io.nodecontrol.node=asus-node
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=900
+
+[Install]
+WantedBy=node-control-core.target

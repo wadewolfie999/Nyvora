@@ -1,0 +1,27 @@
+[Unit]
+Description=Node Control frp server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=node-control-edge
+Group=node-control-edge
+LoadCredentialEncrypted=frp-token:/etc/node-control/credentials/frp-token.cred
+Environment=FRP_TOKEN_FILE=%d/frp-token
+ExecStartPre=/usr/local/libexec/node-control/frps-<%= frp_version %> verify -c /etc/node-control/frps.toml
+ExecStart=/usr/local/libexec/node-control/frps-<%= frp_version %> -c /etc/node-control/frps.toml
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

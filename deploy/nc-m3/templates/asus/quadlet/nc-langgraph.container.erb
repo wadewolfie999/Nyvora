@@ -1,0 +1,39 @@
+[Unit]
+Description=Node Control LangGraph workflow adapter
+After=nc-controller.service
+Requires=nc-controller.service
+
+[Container]
+Image=<%= langgraph_image %>
+Pull=never
+ContainerName=nc-m3-langgraph
+Network=nc-m3.network
+NetworkAlias=langgraph
+Volume=nc-workflow.volume:/state
+Volume=%d/controller-service-token:/run/secrets/controller-service-token:ro
+Environment=NODE_CONTROL_RUNTIME=live
+Environment=CONTROLLER_URL=http://controller:8080
+Environment=CONTROLLER_TOKEN_FILE=/run/secrets/controller-service-token
+Environment=CHECKPOINT_PATH=/state/checkpoints.sqlite
+Environment=LISTEN_ADDR=0.0.0.0:8081
+ReadOnly=true
+ReadOnlyTmpfs=true
+NoNewPrivileges=true
+DropCapability=all
+Memory=512m
+PidsLimit=128
+HealthCmd=python /app/app.py --healthcheck
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=5
+Label=io.nodecontrol.milestone=NC-M3
+Label=io.nodecontrol.node=asus-node
+
+[Service]
+LoadCredentialEncrypted=controller-service-token:%h/.config/node-control/credentials/controller-service-token.cred
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=900
+
+[Install]
+WantedBy=node-control-core.target

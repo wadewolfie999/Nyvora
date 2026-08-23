@@ -1,0 +1,40 @@
+[Unit]
+Description=Node Control authentik server
+After=nc-postgres.service
+Requires=nc-postgres.service
+
+[Container]
+Image=<%= authentik_image %>
+Pull=missing
+ContainerName=nc-m3-authentik-server
+Network=nc-m3.network
+NetworkAlias=authentik
+PublishPort=127.0.0.1:<%= asus_authentik %>:9000
+Volume=nc-authentik-data.volume:/data
+Volume=%d/authentik-db-password:/run/secrets/authentik-db-password:ro
+Volume=%d/authentik-secret-key:/run/secrets/authentik-secret-key:ro
+Environment=AUTHENTIK_POSTGRESQL__HOST=postgres
+Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
+Environment=AUTHENTIK_POSTGRESQL__USER=authentik
+Environment=AUTHENTIK_POSTGRESQL__PASSWORD=file:///run/secrets/authentik-db-password
+Environment=AUTHENTIK_SECRET_KEY=file:///run/secrets/authentik-secret-key
+Environment=AUTHENTIK_OUTPOSTS__DISCOVER=false
+Environment=AUTHENTIK_ERROR_REPORTING__ENABLED=false
+Exec=server
+NoNewPrivileges=true
+DropCapability=all
+Memory=1536m
+PidsLimit=512
+ShmSize=512m
+Label=io.nodecontrol.milestone=NC-M3
+Label=io.nodecontrol.node=asus-node
+
+[Service]
+LoadCredentialEncrypted=authentik-db-password:%h/.config/node-control/credentials/authentik-db-password.cred
+LoadCredentialEncrypted=authentik-secret-key:%h/.config/node-control/credentials/authentik-secret-key.cred
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=900
+
+[Install]
+WantedBy=node-control-core.target

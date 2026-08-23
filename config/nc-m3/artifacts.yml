@@ -1,0 +1,39 @@
+api_version: nodecontrol.io/v1alpha1
+kind: ArtifactLock
+metadata:
+  name: split-edge-nc-m3
+  reviewed_at: "2026-08-21"
+spec:
+  native_artifacts:
+    caddy_linux_amd64:
+      version: 2.11.4
+      source: https://github.com/caddyserver/caddy/releases/download/v2.11.4/caddy_2.11.4_linux_amd64.tar.gz
+      sha256: 527fbf917c39189a1e3b31d34fa955601680b2d5c8055d2a87b8b9588dec7bb9
+    frp_linux_amd64:
+      version: 0.71.0
+      source: https://github.com/fatedier/frp/releases/download/v0.71.0/frp_0.71.0_linux_amd64.tar.gz
+      sha256: 84f27e39f11169f7adcef8e8b70c9329de17747b1f14dad9fb95eef5682ea716
+  external_images:
+    postgres:
+      candidate: docker.io/library/postgres:16-alpine
+      digest: sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+      platforms_verified: [linux/amd64, linux/arm64]
+    nats:
+      candidate: docker.io/library/nats:2.14.5-alpine
+      digest: sha256:d4ac35882ac65aff236cd65b9d3fa4d24332c681e1a85f94eedccd3cdd65b1da
+      platforms_verified: [linux/amd64, linux/arm64]
+    authentik:
+      candidate: ghcr.io/goauthentik/server:2026.5.6
+      digest: sha256:ed120caf710ccf82ef0026f0bc74e51615bc95ebff228a7a2d6fc60c441c3868
+      platforms_verified: [linux/amd64, linux/arm64]
+  repository_images:
+    controller_agent_cli:
+      candidate: localhost/node-control-go
+      build_context: .
+      digest: unresolved-live-amd64-build
+    langgraph:
+      candidate: localhost/node-control-langgraph
+      build_context: .
+      containerfile: workflow/Containerfile
+      digest: unresolved-live-amd64-build
+  deployment_rule: every_image_requires_verified_sha256_digest_before_render_or_pull

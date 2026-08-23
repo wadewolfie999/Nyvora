@@ -1,0 +1,25 @@
+[Unit]
+Description=Node Control frp client
+After=network-online.target node-control-core.target
+Wants=network-online.target
+Requires=node-control-core.target
+
+[Service]
+Type=simple
+LoadCredentialEncrypted=frp-token:%h/.config/node-control/credentials/frp-token.cred
+Environment=FRP_TOKEN_FILE=%d/frp-token
+ExecStartPre=%h/.local/libexec/node-control/frpc-<%= frp_version %> verify -c %h/.config/node-control/frpc.toml
+ExecStart=%h/.local/libexec/node-control/frpc-<%= frp_version %> -c %h/.config/node-control/frpc.toml
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=default.target

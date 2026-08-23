@@ -1,0 +1,155 @@
+api_version: nodecontrol.io/v1alpha1
+kind: NodeInventory
+metadata:
+  name: primary
+  owner: vahid
+  last_reviewed: "2026-08-21"
+spec:
+  canonical_nodes:
+    mac-node:
+      platform: macos
+      roles:
+        - operator
+        - development
+        - connectivity-probe
+      account_mapping:
+        vahid: vaheedgorgeen
+      access:
+        type: local
+      observed_hints:
+        hostname: Vaheeds-MacBook-Air
+        os: macos-26.5.2
+        architecture: arm64
+        cpu_cores: 8
+        memory_bytes: 8589934592
+        wifi_address: 192.168.1.56
+        vpn_interface: utun4
+        v2box_socks: 127.0.0.1:1087
+        podman: podman-6.1.0-rootless-applehv
+        filevault: "off"
+        backup: destination-mount-failed
+      verification_status: observed-nc-m1-and-local-tracer-nc-m2
+
+    vps-node:
+      platform: linux
+      roles:
+        - public-edge
+        - capacity-gated-control-core-candidate
+        - break-glass-rendezvous
+      account_mapping:
+        vahid: ubuntu
+      access:
+        type: ssh
+        aliases:
+          - arvan-vps
+        historical_address: 95.38.182.130
+        port: 22
+      allowed_public_tcp_ports:
+        - 22
+        - 80
+        - 443
+      observed:
+        hostname: wade
+        os: ubuntu-26.04
+        kernel: 7.0.0-29-generic
+        cpu_count: 1
+        memory_bytes: 1002774528
+        swap_bytes: 0
+        root_free_bytes: 18562478080
+        cgroup: v2
+        podman: absent
+        rootless_userns_probe: failed
+        sudo_noninteractive: available
+        listeners:
+          - 0.0.0.0:22
+          - "[::]:22"
+          - 127.0.0.1:2222
+      verification_status: observed-nc-m1
+
+    asus-node:
+      platform: linux
+      roles:
+        - private-application-host
+        - agent-execution
+        - future-hep-execution
+        - selected-control-core
+      account_mapping:
+        vahid: wade
+      access:
+        type: ssh
+        aliases:
+          - asus
+          - asus-remote
+        historical_lan_address: 192.168.1.50
+        port: 22
+      allowed_public_tcp_ports: []
+      observed:
+        hostname: wolfski
+        os: ubuntu-24.04
+        kernel: 6.8.0-138-generic
+        cpu_count: 8
+        memory_bytes: 8205926400
+        swap_bytes: 4294963200
+        root_free_bytes: 37834821632
+        storage_free_bytes: 386501660672
+        cgroup: v2
+        podman: absent
+        rootless_userns_probe: failed
+        sudo_noninteractive: unavailable
+        gpu: nvidia-geforce-gtx-660m-nouveau
+        existing_services:
+          - rootful-docker
+          - jellyfin
+          - asus-reverse-tunnel
+          - legacy-reverse-ssh
+          - tracker-user-service
+        listeners:
+          - 0.0.0.0:22
+          - "[::]:22"
+          - 0.0.0.0:8096
+          - 0.0.0.0:7359/udp
+          - 127.0.0.1:3000
+          - 127.0.0.1:42665
+        protected_local_endpoints:
+          - endpoint: 127.0.0.1:3000
+            owner: tracker.service
+            disposition: preserve
+          - endpoint: 127.0.0.1:42665
+            owner: containerd.service-exact-workload-unverified
+            disposition: reserve-until-owned
+      verification_status: observed-nc-m1-refreshed-nc-m3-preflight
+
+  legacy_identifiers:
+    comp-node:
+      replacement: asus-node
+      accepted_as_target: false
+      reason: retired during mature-platform re-baseline
+
+  placement:
+    selected: split-edge
+    selected_at: "2026-08-21"
+    evidence_record: records/NC-M1.md
+    reason: vps-core fails minimum CPU and memory envelope; asus is the only plausible control-core host
+    allowed_profiles:
+      - vps-core
+      - split-edge
+
+  flows:
+    node_control:
+      direction: node-to-vps
+      transport: wss
+      public_port: 443
+      status: intended-unverified
+    asus_tunnel:
+      direction: asus-node-to-vps-node
+      transport: frp-wss
+      public_port: 443
+      status: frp-not-configured-existing-reverse-ssh-verified
+    operator_direct:
+      direction: mac-node-to-vps-node
+      transport: https-and-wss
+      status: verified-with-vpn-enabled
+    operator_v2box:
+      direction: mac-node-through-v2box-to-vps-node
+      transport: https-and-wss-via-socks
+      status: verified-explicit-socks-with-vpn-enabled

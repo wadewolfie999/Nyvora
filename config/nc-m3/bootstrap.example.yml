@@ -1,0 +1,27 @@
+api_version: nodecontrol.io/v1alpha1
+kind: NC-M3Bootstrap
+metadata:
+  name: primary
+spec:
+  placement_profile: split-edge
+  base_domain: example.invalid
+  operator: vahid
+  age_recipients:
+    - age1replacewithpublicrecipientonly
+  preconditions:
+    wildcard_dns_control: false
+    vps_provider_console_recovery: false
+    vps_firewall_control: false
+    asus_interactive_sudo: false
+    age_offline_recovery_copy: false
+    asus_42665_owner_resolved: false
+    nats_credentials_generated: false
+  records:
+    dns_evidence: pending
+    recovery_evidence: pending
+    secret_custody_evidence: pending
+    nats_evidence: pending
+
+# This example is intentionally not renderable. Copy it to bootstrap.yml only
+# after replacing the non-secret public inputs and recording every prerequisite.
+# Never add private age identities, passwords, NATS credentials, or tokens.

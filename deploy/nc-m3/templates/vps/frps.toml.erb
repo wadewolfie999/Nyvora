@@ -1,0 +1,15 @@
+bindAddr = "127.0.0.1"
+bindPort = <%= vps_frps_transport %>
+vhostHTTPPort = <%= vps_frps_vhost %>
+detailedErrorsToClient = false
+
+auth.method = "token"
+auth.additionalScopes = ["HeartBeats", "NewWorkConns"]
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "{{ .Envs.FRP_TOKEN_FILE }}"
+
+transport.tls.force = true
+transport.maxPoolCount = 8
+
+log.to = "console"
+log.level = "info"
