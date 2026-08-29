@@ -1,9 +1,9 @@
-# Radicle Development and Handoff
+# Historical Radicle Development and Handoff
 
-This repository uses Radicle as the development and review workflow. A local
-Git commit, a published branch, a Radicle patch, a patch review, and a merge
-are separate states. Publication does not imply acceptance or canonical-branch
-integration.
+This runbook records the superseded Radicle development and review workflow.
+It is retained for historical evidence and is not an instruction to mutate
+Radicle state. The current workflow is documented in
+`docs/github-development-and-handoff.md`.
 
 ## State model
 

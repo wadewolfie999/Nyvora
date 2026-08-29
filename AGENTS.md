@@ -61,11 +61,15 @@ without separate authorization.
 - Prefer small reversible patches and deep modules with narrow interfaces.
 - Never commit plaintext credentials, private keys, tokens, cookies, or auth
   state. SOPS files must remain encrypted.
-- Do not create remotes, publish images, deploy production applications, enable
-  HEP workloads, or add collaborators without explicit authority. Task-scoped
-  Radicle branch/patch publication is allowed only when the existing Nyvora
-  project and RID have been independently verified; it never authorizes a
-  canonical merge.
+- The canonical remote and collaboration workflow is GitHub repository
+  `wadewolfie999/Mynyra`, configured locally as `origin`. Use focused branches,
+  commits, pull requests, and GitHub Actions. Merge `main` only after the
+  required review and checks are satisfied.
+- Radicle refs, patches, and handoffs are historical evidence only. Do not
+  push, seed, review, merge, or otherwise mutate Radicle state unless it is
+  separately authorized.
+- Do not publish images, deploy production applications, enable HEP
+  workloads, or add collaborators without explicit authority.
 - A passing command is not completion; verify the intended behavior and record
   remaining gaps.
 

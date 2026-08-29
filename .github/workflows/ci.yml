@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ruby-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - name: Validate repository contracts
+        run: ruby scripts/validate_repo.rb
+      - name: Run Ruby contract tests
+        run: |
+          ruby scripts/test_nc_m3_config.rb
+          ruby scripts/test_collect_nc_m3_preflight.rb
+      - name: Check patch whitespace
+        run: git diff --check
+
+  go-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Run Go tests
+        run: go test ./...
