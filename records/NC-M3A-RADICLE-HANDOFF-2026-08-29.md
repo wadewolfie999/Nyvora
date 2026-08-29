@@ -144,6 +144,29 @@ Additional UTC evidence timestamp: 2026-08-29T04:41:09Z.
   public firewall rule, identity rotation, delegate change, quorum change, or
   unrelated service change was made.
 
+## Final NC-M3A completion pass
+
+Final UTC evidence timestamp: 2026-08-29T04:49:49Z.
+
+- Repository HEAD is `2682c3ff33eb3aa7db7e3fe970ea0bfc5b77ba99` on
+  `codex/nc-m3a-radicle-workflow`. This pass adds explicit inventory roles for
+  the authoritative Mac controller and authenticated private-topology members,
+  restricts active profile selection to `mac-authority`, strengthens legacy
+  profile rejection, and records NC-M3A's repository/live-replication exit
+  evidence.
+- The existing open patch remains unmerged. Its latest verified head before
+  this repository pass was `42576a731c5762879491e8ab31c6b6e19db70990`; this
+  final pass must be published as the next patch revision after this record is
+  committed.
+- ASUS restart status: not performed. Radicle 1.10.1 has no `node restart`
+  command; activation requires stopping the running process and starting it
+  with the owner-held identity passphrase. The process was left running to
+  preserve the already-proven live outbound replication. The on-disk listener
+  configuration and rollback snapshot remain unchanged and verified.
+- NC-M3A disposition: repository and live replication are complete; the
+  persistent ASUS inbound-listener activation is pending secure owner-assisted
+  restart. NC-M3B implementation has not started.
+
 ## Open and deferred work
 
 - Perform a secure ASUS Radicle restart when convenient to activate the staged
