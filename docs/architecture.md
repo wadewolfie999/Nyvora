@@ -1,5 +1,11 @@
 # Architecture
 
+> Status: legacy candidate architecture view preserved for reconciliation. The
+> owner-adopted corrected baseline in `architecture/` controls current
+> authority, placement, runtime-writer, and failure semantics. The boundaries
+> below are not baseline-compliance evidence until reconciled by ADR and tested
+> implementation.
+
 ## Responsibility topology
 
 ```text

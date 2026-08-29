@@ -2,19 +2,23 @@
 
 ## Scope and canonical names
 
-This Git repository is the authoritative desired-state and control-software
-source for the mature three-node platform:
+This Git repository is the durable desired-state and control-software source
+for the mature three-node platform. The controlling architecture is the
+owner-adopted baseline in
+`architecture/NYVORA-Architectural-Baseline-v1.0.1-corrected.docx`.
 
-- `mac-node`: Vahid's macOS operator and development workstation.
-- `vps-node`: private authenticated topology member, public edge, relay, recovery
-  rendezvous, and future HEP host.
-- `asus-node`: PostgreSQL, NATS, supporting services, compute, and authenticated
-  agent host.
+- `mac-node`: Vahid's high-trust owner and approval plane; not a routine runtime
+  dependency.
+- `vps-node`: private topology member providing edge and continuity functions.
+- `asus-node`: normal bounded reconciler/runtime writer and compute host.
 
-`mac-node` is the sole authoritative Nyvora controller. During a `mac-node`
-outage, workers and supporting services may complete previously authorized
-transitions and record execution facts, but may not create new authority,
-policy, enrollment, capability grants, or execution authorization.
+GitHub is durable desired state; PostgreSQL owns runtime state; NATS is
+transport; evidence records facts; none of these creates authority. ASUS may
+write runtime state only under a bounded lease/fencing policy. No node may
+self-elect during ambiguity. During a `mac-node` outage, previously authorized
+transitions may continue within cached, signed, unexpired bounds, but no new
+authority, policy, enrollment, capability grant, or execution authorization
+may be created.
 
 `comp-node` is retired. It may appear only in dated legacy evidence. Never use
 it as a current target or silently translate it in a live command.
@@ -23,11 +27,11 @@ it as a current target or silently translate it in a live command.
 
 Before work, read only the relevant parts of:
 
-1. `PLANS.md` for the active milestone and exit evidence.
-2. `inventory/nodes.yml` for stable identities and known access paths.
-3. `docs/baseline.md` for dated observations and unknowns.
-4. `policies/change-contract.md` for authority.
-5. The relevant runbook and decision record.
+1. `architecture/README.md` and the controlling baseline.
+2. `architecture/CHANGE-CONTROL.md` and `docs/github-governance.md`.
+3. `docs/legacy/AB-1-RUNTIME-RECONCILIATION.md` before reading legacy runtime
+   contracts.
+4. The relevant policy, current stage record, and dated evidence.
 
 Recorded addresses, services, ports, health, and placement are historical until
 freshly observed. Never convert an unknown into an assumption.

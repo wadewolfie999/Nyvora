@@ -25,9 +25,12 @@ required_files = %w[
   records/NYVORA-BASELINE-ADOPTION-2026-08-30.md
   records/AB-0-EXECUTION-2026-08-30.md
   .github/CODEOWNERS
+  .github/dependabot.yml
   docs/github-governance.md
+  docs/legacy/AB-1-RUNTIME-RECONCILIATION.md
   .github/workflows/ci.yml
   .github/workflows/repository-backup.yml
+  .github/workflows/dependency-review.yml
 ]
 required_files.each do |relative|
   fail_check("missing #{relative}") unless File.file?(File.join(ROOT, relative))
@@ -48,6 +51,7 @@ required_markers = [
   "NYV-AB-2026-01",
   "v1.0.1",
   "Adopted by owner instruction on 30 August 2026",
+  "CLAIMED — AB-0 PASS; protected main",
   "GitHub",
   "break-glass"
 ]
@@ -71,7 +75,7 @@ ci = File.read(File.join(ROOT, ".github/workflows/ci.yml"))
 fail_check("CI does not run architecture baseline validation") unless ci.include?("ruby scripts/validate_architecture_baseline.rb")
 
 backup = File.read(File.join(ROOT, ".github/workflows/repository-backup.yml"))
-%w[workflow_dispatch schedule git\ bundle git\ bundle\ verify actions/upload-artifact@v4 retention-days:].each do |marker|
+%w[workflow_dispatch schedule git\ bundle git\ bundle\ verify actions/upload-artifact@ retention-days: restored.git].each do |marker|
   fail_check("backup workflow is missing #{marker.inspect}") unless backup.include?(marker)
 end
 

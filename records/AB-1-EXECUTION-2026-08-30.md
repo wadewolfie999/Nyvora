@@ -11,12 +11,16 @@ activation, production mutation, or operational qualification.
 
 - Baseline lint for the adopted DOCX, authority markers, package figures, and
   supersession/change-control files.
-- Required baseline lint, repository validation, Ruby contract tests, and Go
-  tests in the pull-request CI workflow.
+- Required baseline lint, preserved legacy contract validation, Ruby contract
+  tests, Go tests, and dependency review in pull-request CI. Legacy validator
+  passes are explicitly not treated as architectural-baseline compliance.
 - CODEOWNERS routing to the owner-controlled review boundary.
+- Protected-path ownership and explicit legacy runtime-contract deferral.
+- Immutable SHA-pinned GitHub Actions, least-privilege workflow permissions,
+  secret scanning/push protection, and Dependabot configuration.
 - Development, testing, and operational environment declarations.
-- A scheduled/manual complete Git-bundle backup workflow with checksum and
-  captured `main` commit.
+- A scheduled/manual complete Git-bundle backup workflow with checksum,
+  captured `main` commit, and restore/fsck verification.
 - GitHub governance documentation with the owner-only reviewer limitation and
   backup retention limitation stated explicitly.
 

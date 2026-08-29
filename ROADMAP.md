@@ -1,5 +1,9 @@
 # Node Control Roadmap
 
+> Status: preserved legacy roadmap view. The owner-adopted corrected baseline
+> controls current architecture; the NC-M3 sequence below is candidate and
+> historical material pending explicit reconciliation.
+
 1. **Re-baseline** — make this nested repository authoritative and retire the
    obsolete compute-node contract.
 2. **Discover** — observe all three nodes, both operator VPN modes, hardware,

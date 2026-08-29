@@ -10,9 +10,9 @@ schemas, policies, runbooks, deployment templates, and evidence records.
 ## Current status
 
 **AB-0 — Baseline adoption: complete.** The corrected architectural baseline
-is committed to protected GitHub `main`. The next phase is **AB-1 — GitHub
-governance**, whose intent is to establish fuller permissions, validation,
-review, and backup controls.
+is committed to protected GitHub `main`. **AB-1 — GitHub governance** is in
+progress: its intent is to establish fuller permissions, validation, review,
+environment, and backup controls.
 
 Repository adoption does not claim live node deployment, credential issuance,
 service health, recovery qualification, or operational autonomy.
@@ -50,6 +50,9 @@ historical context and is not part of the required change path.
 Make focused changes from the current GitHub `main`, open a pull request, and
 include intent, affected boundaries, risk, rollback, and verification evidence.
 The protected branch requires the repository CI checks.
+
+AB-1 governance details and backup/restore procedure are documented in
+[`docs/github-governance.md`](docs/github-governance.md).
 
 Run the local validation suite:
 

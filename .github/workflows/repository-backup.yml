@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out complete repository history
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
 
@@ -26,11 +26,14 @@ jobs:
           git fetch --prune --tags origin
           git bundle create nyvora.git.bundle --all
           git bundle verify nyvora.git.bundle
+          git clone --mirror nyvora.git.bundle restored.git
+          git -C restored.git fsck --full
+          test "$(git -C restored.git rev-parse HEAD)" = "$(git rev-parse HEAD)"
           sha256sum nyvora.git.bundle > nyvora.git.bundle.sha256
           git rev-parse HEAD > nyvora.main.commit
 
       - name: Upload recoverable repository backup
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: nyvora-git-bundle-${{ github.run_id }}
           path: |

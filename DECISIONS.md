@@ -1,5 +1,10 @@
 # Architecture Decision Record
 
+> Status: preserved pre-baseline decision ledger. Conflicting authority,
+> placement, runtime-controller, and forge statements are superseded by the
+> owner-adopted corrected architecture baseline. Do not treat passing tests or
+> entries below as baseline conformance without a reconciliation ADR.
+
 ## D-001 — Stable node identities
 
 Accepted: `mac-node`, `vps-node`, and `asus-node`. `comp-node` is retired and
