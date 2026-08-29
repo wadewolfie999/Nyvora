@@ -1,5 +1,9 @@
 # Runbook: Bootstrap the Selected Control Plane
 
+> Status: legacy NC-M3 candidate runbook. It is preserved for reconciliation
+> and does not define current architecture or authorize live APPLY. Consult
+> the owner-adopted corrected baseline and AB-stage records first.
+
 ## Preconditions
 
 - NC-M0 and NC-M1 are complete and recorded.

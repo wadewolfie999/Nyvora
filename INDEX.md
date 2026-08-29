@@ -1,5 +1,11 @@
 # Node Control
 
+> Current authority: the owner-adopted corrected baseline in
+> `architecture/NYVORA-Architectural-Baseline-v1.0.1-corrected.docx`.
+> `PLANS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/architecture.md`, and the
+> legacy NC-M3 runtime contracts are preserved candidate/historical views
+> until reconciled; they are not architectural-baseline compliance evidence.
+
 Node Control is the versioned control plane for `mac-node`, `vps-node`, and
 `asus-node`. It combines a Go control core, a Python LangGraph workflow adapter,
 rootless node runtimes, and explicit plan/apply/verify/record governance.
