@@ -29,13 +29,17 @@ authorized by AB-0.
 
 ## Evidence
 
-Local package validation and artifact checks are recorded in the task handoff.
-The final disposition must record the focused branch, pull request, merged
-`main` commit, and observed protection configuration without recording tokens
-or other secret material.
+Local package validation passed before publication: repository validation,
+Ruby contract tests, Go tests, DOCX rendering, and semantic-marker checks. The
+focused branch was `codex/ab-0-baseline-adoption`, and pull request #2 was
+merged into `main` as commit `0461dfc4391565bd3761e79575f31956aec5011a`.
+
+Observed GitHub `main` protection requires strict `go-tests` and
+`ruby-validation` checks, enforces administrators, and disallows force-pushes
+and branch deletion. No token or other secret material is recorded here.
 
 ## Exit decision
 
-`PENDING` until the package is merged into protected GitHub `main`. AB-1 is the
-next stage after this exit and covers the fuller governance, permissions,
-validation, and backup controls.
+`PASS` — the package is merged into protected GitHub `main`. AB-1 is the next
+stage and covers the fuller governance, permissions, validation, and backup
+controls.
