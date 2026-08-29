@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"nodecontrol.local/node-control/internal/protocol"
+	"nodecontrol.local/node-control/internal/topology"
 )
 
 type Decision struct {
@@ -12,7 +13,10 @@ type Decision struct {
 	Reason     string `json:"reason"`
 }
 
-func Evaluate(target, action string) (Decision, error) {
+func EvaluateAs(actor, target, action string) (Decision, error) {
+	if err := topology.RequireController(actor); err != nil {
+		return Decision{}, err
+	}
 	if target == "comp-node" {
 		return Decision{}, fmt.Errorf("retired target; use asus-node")
 	}

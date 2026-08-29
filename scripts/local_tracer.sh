@@ -4,6 +4,19 @@ set -euo pipefail
 repo_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 action=${1:-}
 profile=${2:-split-edge}
+controller_port=${NC_TRACER_CONTROLLER_PORT:-18080}
+workflow_port=${NC_TRACER_WORKFLOW_PORT:-18081}
+
+for port in "$controller_port" "$workflow_port"; do
+  if [[ ! "$port" =~ ^[0-9]+$ ]] || (( port < 1024 || port > 65535 )); then
+    echo "invalid tracer loopback port: $port" >&2
+    exit 2
+  fi
+done
+if [[ "$controller_port" == "$workflow_port" ]]; then
+  echo "tracer controller and workflow ports must differ" >&2
+  exit 2
+fi
 
 case "$profile" in
   split-edge|vps-core) ;;
@@ -129,12 +142,12 @@ case "$action" in
       "${common_labels[@]}" --label "io.nodecontrol.simulated-node=$core_node" \
       --network "$network" --read-only --cap-drop=all \
       --security-opt=no-new-privileges --tmpfs /tmp:rw,size=16m,mode=1777 \
-      --publish 127.0.0.1:18080:8080 \
+      --publish "127.0.0.1:${controller_port}:8080" \
       --env NODE_CONTROL_RUNTIME=tracer \
       --env DATABASE_URL=postgres://nodecontrol@nc-m2-postgres:5432/nodecontrol?sslmode=disable \
       --env NATS_URL=nats://nc-m2-nats:4222 \
       "$go_image" >/dev/null
-    wait_for_http http://127.0.0.1:18080/api/v1alpha1/healthz
+    wait_for_http "http://127.0.0.1:${controller_port}/api/v1alpha1/healthz"
 
     local_node=
     for local_node in mac-node vps-node asus-node; do
@@ -152,12 +165,12 @@ case "$action" in
       "${common_labels[@]}" --label "io.nodecontrol.simulated-node=$core_node" \
       --network "$network" --read-only --cap-drop=all \
       --security-opt=no-new-privileges --tmpfs /tmp:rw,size=16m,mode=1777 \
-      --publish 127.0.0.1:18081:8081 \
+      --publish "127.0.0.1:${workflow_port}:8081" \
       --env NODE_CONTROL_RUNTIME=tracer \
       --env CONTROLLER_URL=http://nc-m2-controller:8080 \
       --volume "$workflow_volume:/state" \
       "$workflow_image" >/dev/null
-    wait_for_http http://127.0.0.1:18081/healthz
+    wait_for_http "http://127.0.0.1:${workflow_port}/healthz"
     ;;
   down)
     remove_containers

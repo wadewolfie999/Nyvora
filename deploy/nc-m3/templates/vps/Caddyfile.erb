@@ -1,42 +1,4 @@
-{
-	admin 127.0.0.1:<%= vps_caddy_admin %>
-}
-
-<%= tunnel_host %> {
-	route {
-		@frp_transport path /~!frp*
-		reverse_proxy @frp_transport 127.0.0.1:<%= vps_frps_transport %>
-		respond 404
-	}
-}
-
-<%= auth_host %> {
-	reverse_proxy 127.0.0.1:<%= vps_frps_vhost %>
-}
-
-<%= control_host %> {
-	route {
-		request_header -X-Authentik-*
-		request_header -X-Node-Control-Proxy-Token
-
-		reverse_proxy /outpost.goauthentik.io/* 127.0.0.1:<%= vps_frps_vhost %> {
-			header_up Host <%= auth_host %>
-		}
-
-		forward_auth 127.0.0.1:<%= vps_frps_vhost %> {
-			uri /outpost.goauthentik.io/auth/caddy
-			header_up Host <%= auth_host %>
-			copy_headers X-Authentik-Username
-		}
-
-		reverse_proxy 127.0.0.1:<%= vps_frps_vhost %> {
-			header_up X-Node-Control-Proxy-Token {file./run/credentials/node-control-caddy.service/controller-proxy-proof}
-		}
-	}
-}
-
-<%= bus_host %> {
-	reverse_proxy 127.0.0.1:<%= vps_frps_vhost %> {
-		flush_interval -1
-	}
-}
+# Combined root: preserve the protected package-managed Caddyfile first, then
+# add the independently removable Node Control fragment.
+import /etc/caddy/Caddyfile
+import /etc/node-control/caddy/node-control.Caddyfile

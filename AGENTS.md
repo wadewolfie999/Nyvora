@@ -6,8 +6,15 @@ This Git repository is the authoritative desired-state and control-software
 source for the mature three-node platform:
 
 - `mac-node`: Vahid's macOS operator and development workstation.
-- `vps-node`: public edge, recovery rendezvous, and capacity-gated core candidate.
-- `asus-node`: private application, agent, selected control-core, and future HEP host.
+- `vps-node`: private authenticated topology member, public edge, relay, recovery
+  rendezvous, and future HEP host.
+- `asus-node`: PostgreSQL, NATS, supporting services, compute, and authenticated
+  agent host.
+
+`mac-node` is the sole authoritative Nyvora controller. During a `mac-node`
+outage, workers and supporting services may complete previously authorized
+transitions and record execution facts, but may not create new authority,
+policy, enrollment, capability grants, or execution authorization.
 
 `comp-node` is retired. It may appear only in dated legacy evidence. Never use
 it as a current target or silently translate it in a live command.
@@ -54,8 +61,15 @@ without separate authorization.
 - Prefer small reversible patches and deep modules with narrow interfaces.
 - Never commit plaintext credentials, private keys, tokens, cookies, or auth
   state. SOPS files must remain encrypted.
-- Do not create remotes, push, publish images, deploy production applications,
-  enable HEP workloads, or add collaborators without explicit authority.
+- The canonical remote and collaboration workflow is GitHub repository
+  `wadewolfie999/Mynyra`, configured locally as `origin`. Use focused branches,
+  commits, pull requests, and GitHub Actions. Merge `main` only after the
+  required review and checks are satisfied.
+- Radicle refs, patches, and handoffs are historical evidence only. Do not
+  push, seed, review, merge, or otherwise mutate Radicle state unless it is
+  separately authorized.
+- Do not publish images, deploy production applications, enable HEP
+  workloads, or add collaborators without explicit authority.
 - A passing command is not completion; verify the intended behavior and record
   remaining gaps.
 
@@ -67,4 +81,6 @@ without separate authorization.
   controller API; it never administers nodes directly.
 - PostgreSQL owns runtime state; NATS carries versioned commands/events.
 - Caddy is the only public HTTP edge. Asus exposure is outbound through `frp`.
+- Public DNS, TLS, ingress, and authentik are NC-M3E concerns and must not gate
+  private NC-M3B–NC-M3D bootstrap.
 - No Kubernetes or Slurm in platform v1.

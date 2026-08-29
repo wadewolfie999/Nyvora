@@ -2,8 +2,9 @@ api_version: nodecontrol.io/v1alpha1
 kind: PlacementProfile
 metadata:
   name: split-edge
+  historical: true
 spec:
-  description: Public edge on vps-node and complete control core on asus-node.
+  description: "Historical candidate: public edge on vps-node and complete control core on asus-node."
   fixed_services:
     vps-node:
       - caddy

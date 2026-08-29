@@ -1,0 +1,11 @@
+[Unit]
+After=node-control-frps.service
+Wants=node-control-frps.service
+
+[Service]
+LoadCredentialEncrypted=controller-proxy-proof:/etc/node-control/credentials/controller-proxy-proof.cred
+ExecStartPre=/usr/local/libexec/node-control/caddy-<%= caddy_version %> validate --config /etc/node-control/caddy/Caddyfile --adapter caddyfile
+ExecStart=
+ExecStart=/usr/local/libexec/node-control/caddy-<%= caddy_version %> run --environ --config /etc/node-control/caddy/Caddyfile --adapter caddyfile
+ExecReload=
+ExecReload=/usr/local/libexec/node-control/caddy-<%= caddy_version %> reload --config /etc/node-control/caddy/Caddyfile --adapter caddyfile --force

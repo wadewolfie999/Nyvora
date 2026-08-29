@@ -1,6 +1,14 @@
 # Runbook: Three-Node Connectivity
 
-## Intended control path
+## NC-M3B private control path
+
+During NC-M3B, the controller on `mac-node` and the authenticated agents on
+`asus-node` and `vps-node` use the private TLS/NKey/JWT NATS endpoint on
+`asus-node`. The logical three-node paths are brokered through that ASUS
+supporting service. This path does not require public DNS, Caddy, `frp`, or
+authentik.
+
+## Deferred NC-M3E edge path
 
 ```text
 node agents -- outbound WSS/443 --> vps-node Caddy --> NATS/controller

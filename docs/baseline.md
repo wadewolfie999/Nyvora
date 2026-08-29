@@ -80,13 +80,15 @@ time-sensitive.
 - A Jellyfin backup timer exists, but its successful restore behavior was not
   tested.
 
-## Selected placement
+## Historical placement finding
 
-`split-edge` is selected. The VPS cannot meet the current authentik minimum of
-2 CPUs and 2 GB RAM before accounting for PostgreSQL, NATS, controller, Caddy,
-or LangGraph. Asus is the only node with a plausible control-core capacity
-envelope. This is a fixed placement selection, not an assertion that NC-M3 is
-ready to apply.
+The 2026-08-21 observation selected the `split-edge` candidate because the VPS
+could not meet the then-current complete-core capacity envelope and Asus was
+the only node with a plausible control-core capacity envelope. That finding is
+historical evidence only. The approved `mac-authority` topology supersedes it:
+`mac-node` is authoritative, `asus-node` hosts PostgreSQL/NATS and compute, and
+`vps-node` is a private topology member with public edge duties deferred to
+NC-M3E.
 
 ## NC-M3 prerequisites still unmet
 

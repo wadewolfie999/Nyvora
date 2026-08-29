@@ -24,6 +24,7 @@ module NodeControl
       vps_provider_console_recovery
       vps_firewall_control
       asus_interactive_sudo
+      asus_no_critical_simulation
       age_offline_recovery_copy
       asus_42665_owner_resolved
       nats_credentials_generated
@@ -128,7 +129,8 @@ module NodeControl
     class RepositoryInputs
       attr_reader :root, :inventory_path, :bootstrap_path, :artifacts_path,
                   :ports_path, :nats_config_path, :encrypted_secrets_path,
-                  :inventory, :bootstrap, :ports
+                  :capacity_path, :inventory, :bootstrap, :artifacts, :ports,
+                  :capacity
 
       def initialize(root)
         @root = root
@@ -136,11 +138,14 @@ module NodeControl
         @bootstrap_path = File.join(root, "config/nc-m3/bootstrap.yml")
         @artifacts_path = File.join(root, "config/nc-m3/artifacts.yml")
         @ports_path = File.join(root, "config/nc-m3/ports.yml")
+        @capacity_path = File.join(root, "config/nc-m3/capacity.yml")
         @nats_config_path = File.join(root, "config/nc-m3/nats/server.conf")
         @encrypted_secrets_path = File.join(root, "secrets/nc-m3.enc.yml")
         @inventory = load_yaml(inventory_path)
         @bootstrap = load_yaml(bootstrap_path) if File.file?(bootstrap_path)
+        @artifacts = load_yaml(artifacts_path)
         @ports = load_yaml(ports_path)
+        @capacity = load_yaml(capacity_path)
         validate_inventory!
       end
 
@@ -185,6 +190,18 @@ module NodeControl
             "detail" => confirmed ? "recorded true in the real bootstrap input" : "not recorded true"
           }
         end
+      end
+
+      def planned_caddy_version
+        artifacts.dig("spec", "native_artifacts", "caddy_linux_amd64", "version").to_s
+      end
+
+      def capacity_minimum(name)
+        capacity.fetch("spec").fetch("asus-node").fetch("minimum").fetch(name)
+      end
+
+      def asus_package_locks
+        artifacts.fetch("spec").fetch("asus_packages")
       end
 
       def repository_blockers
@@ -239,8 +256,10 @@ module NodeControl
         /\b(?:ssh-keygen|age-keygen|nsc|nats)\s+(?:generate|add|issue|create)\b/
       ].freeze
 
-      def initialize(domain)
+      def initialize(domain, caddy_admin_port: 2019)
         @domain = domain
+        @caddy_admin_port = Integer(caddy_admin_port)
+        raise ArgumentError, "invalid Caddy admin port" unless @caddy_admin_port.between?(1, 65_535)
       end
 
       def local
@@ -393,6 +412,14 @@ module NodeControl
             if command -v unshare >/dev/null 2>&1 && unshare -Ur true >/dev/null 2>&1; then printf 'userns_probe=pass\n'; else printf 'userns_probe=fail\n'; fi
             linger=$(loginctl show-user "$user" -p Linger --value 2>/dev/null || true)
             printf 'linger=%s\n' "${linger:-unavailable}"
+            for package in podman uidmap fuse-overlayfs slirp4netns; do
+              installed=$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null || true)
+              version=$(dpkg-query -W -f='${Version}' "$package" 2>/dev/null || true)
+              candidate=$(apt-cache policy "$package" 2>/dev/null | awk '/Candidate:/ {print $2; exit}')
+              printf 'package.%s.status=%s\n' "$package" "${installed:-absent}"
+              printf 'package.%s.version=%s\n' "$package" "${version:-absent}"
+              printf 'package.%s.candidate=%s\n' "$package" "${candidate:-unavailable}"
+            done
           SH
           probe("tools", "tools", "bootstrap and diagnostic tool presence", tool_probe(%w[ssh curl systemctl ss lsof fuser podman sops age age-keygen caddy frps frpc nats-server psql docker])),
           probe("privilege", "privilege", "noninteractive administrative capability", <<~'SH'),
@@ -419,6 +446,7 @@ module NodeControl
           SH
         ]
         probes << probe("port_42665", "port_owner", "unprivileged ownership evidence for TCP/42665", port_owner_probe) if node_id == "asus-node"
+        probes << probe("caddy_runtime", "services", "Caddy service ownership, version, and admin health", caddy_runtime_probe) if node_id == "vps-node"
         probes << dns_probe(:linux)
         validate_read_only!(probes)
         probes
@@ -524,6 +552,34 @@ module NodeControl
         SH
       end
 
+      def caddy_runtime_probe
+        <<~SH
+          if command -v systemctl >/dev/null 2>&1; then
+            printf 'service.active=%s\n' "$(systemctl show caddy.service --property=ActiveState --value 2>/dev/null || printf unavailable)"
+            printf 'service.main_pid=%s\n' "$(systemctl show caddy.service --property=MainPID --value 2>/dev/null || printf unavailable)"
+            printf 'service.fragment_path=%s\n' "$(systemctl show caddy.service --property=FragmentPath --value 2>/dev/null || printf unavailable)"
+          fi
+          if command -v caddy >/dev/null 2>&1; then
+            version=$(caddy version 2>/dev/null | awk 'NR == 1 {print $1}' | sed 's/^v//')
+            printf 'binary.version=%s\n' "${version:-unavailable}"
+          else
+            printf 'binary.version=unavailable\n'
+          fi
+          if command -v dpkg-query >/dev/null 2>&1; then
+            package_version=$(dpkg-query -W -f='${Version}' caddy 2>/dev/null || true)
+            printf 'package.version=%s\n' "${package_version:-unavailable}"
+          else
+            printf 'package.version=unavailable\n'
+          fi
+          if command -v curl >/dev/null 2>&1; then
+            admin_code=$(curl --noproxy '*' --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 4 http://127.0.0.1:#{@caddy_admin_port}/config/ 2>/dev/null || true)
+            printf 'admin.http=%s\n' "${admin_code:-unavailable}"
+          else
+            printf 'admin.http=unavailable\n'
+          fi
+        SH
+      end
+
       def hostnames
         [@domain] + DNS_LABELS.map { |label| "#{label}.#{@domain}" }
       end
@@ -583,7 +639,8 @@ module NodeControl
         @inputs = inputs
         @runner = runner
         @clock = clock
-        @catalog = ProbeCatalog.new(inputs.base_domain)
+        caddy_admin_port = inputs.ports.dig("spec", "vps-node", "loopback_tcp", "caddy_admin")
+        @catalog = ProbeCatalog.new(inputs.base_domain, caddy_admin_port: caddy_admin_port)
       end
 
       def plan
@@ -839,6 +896,7 @@ module NodeControl
         access_and_identity_rules
         dns_rules
         privilege_and_runtime_rules
+        capacity_rules
         port_rules
         preservation_rules
         vpn_rules
@@ -914,6 +972,24 @@ module NodeControl
         end
         network_ready = runtime["tool.slirp4netns"] == "present" || runtime["tool.pasta"] == "present"
         add("asus-node.runtime.network", network_ready, "asus-node lacks a rootless network helper", ["asus-node.runtime"])
+        @inputs.asus_package_locks.each do |package, locked_version|
+          installed = runtime["package.#{package}.version"]
+          candidate = runtime["package.#{package}.candidate"]
+          add(
+            "asus-node.package.#{package}.candidate",
+            candidate == locked_version,
+            "asus-node package #{package} candidate #{candidate || 'unavailable'} differs from lock #{locked_version}",
+            ["asus-node.runtime", "config/nc-m3/artifacts.yml"]
+          )
+          next if installed.nil? || installed == "absent"
+
+          add(
+            "asus-node.package.#{package}.installed",
+            installed == locked_version,
+            "asus-node installed package #{package} #{installed} differs from lock #{locked_version}",
+            ["asus-node.runtime", "config/nc-m3/artifacts.yml"]
+          )
+        end
 
         local_tools = key_values(probe_output("mac-node", "tools"))
         %w[ssh curl ruby sops age age-keygen].each do |tool|
@@ -935,19 +1011,55 @@ module NodeControl
         end
       end
 
+      def capacity_rules
+        memory = linux_memory_values(probe_output("asus-node", "memory_swap"))
+        disk = linux_root_available_bytes(probe_output("asus-node", "disk"))
+        checks = {
+          "memory_available_bytes" => memory["memory_available_bytes"],
+          "swap_free_bytes" => memory["swap_free_bytes"],
+          "root_free_bytes" => disk
+        }
+        checks.each do |name, observed|
+          minimum = @inputs.capacity_minimum(name)
+          add(
+            "asus-node.capacity.#{name}",
+            observed && observed >= minimum,
+            "asus-node #{name} is below the NC-M3 admission minimum of #{minimum} bytes",
+            [name == "root_free_bytes" ? "asus-node.disk" : "asus-node.memory_swap"]
+          )
+        end
+      end
+
       def port_rules
         allocations = @inputs.ports.fetch("spec")
         %w[vps-node asus-node].each do |node_id|
           output = probe_output(node_id, "sockets")
           allocations.fetch(node_id).fetch("loopback_tcp").each do |name, port|
+            if node_id == "vps-node" && name == "caddy_admin"
+              evaluate_caddy_admin_port(output, port)
+              next
+            end
+
             free = !listening_port?(output, port)
-            add("#{node_id}.port.#{port}", free, "#{node_id} candidate #{name} TCP/#{port} is already listening", ["#{node_id}.sockets"])
+            if free
+              port_result("#{node_id}.port.#{port}", "satisfied", "free_candidate", "#{node_id} candidate #{name} TCP/#{port} is free", ["#{node_id}.sockets"])
+            else
+              blocker = "#{node_id} candidate #{name} TCP/#{port} is already listening"
+              @blockers << blocker
+              port_result("#{node_id}.port.#{port}", "blocked", "collision", blocker, ["#{node_id}.sockets"])
+            end
           end
         end
 
         owner_output = probe_output("asus-node", "port_42665")
         present = listening_port?(owner_output, 42_665)
-        add("asus-node.port.42665.present", present, "asus-node protected TCP/42665 is no longer observed; baseline drift requires review", ["asus-node.port_42665"])
+        if present
+          port_result("asus-node.port.42665.present", "satisfied", "protected_listener", "asus-node protected TCP/42665 remains present", ["asus-node.port_42665"])
+        else
+          blocker = "asus-node protected TCP/42665 is no longer observed; baseline drift requires review"
+          @blockers << blocker
+          port_result("asus-node.port.42665.present", "blocked", "missing_expected_listener", blocker, ["asus-node.port_42665"])
+        end
         owner_visible = owner_output.match?(/users:\(\(|\bCOMMAND\s+PID\b|\bpid=\d+|\bcontainerd\b/i)
         if owner_visible
           pass_result("asus-node.port.42665.process", "asus-node TCP/42665 process-level ownership evidence was visible", ["asus-node.port_42665"])
@@ -956,16 +1068,68 @@ module NodeControl
         end
       end
 
+      def evaluate_caddy_admin_port(sockets, port)
+        runtime = key_values(probe_output("vps-node", "caddy_runtime"))
+        listening = listening_port?(sockets, port)
+        active = runtime["service.active"] == "active"
+        main_pid = runtime["service.main_pid"].to_s.match?(/\A[1-9]\d*\z/)
+        admin_healthy = runtime["admin.http"].to_s.match?(/\A2\d\d\z/)
+        owned = listening && active && main_pid && admin_healthy
+
+        if owned
+          port_result(
+            "vps-node.port.#{port}", "satisfied", "expected_listener",
+            "vps-node Caddy admin TCP/#{port} is an expected healthy listener",
+            ["vps-node.sockets", "vps-node.caddy_runtime"]
+          )
+        else
+          disposition = listening ? "collision" : "missing_expected_listener"
+          blocker = if listening
+            "vps-node TCP/#{port} is listening without verified active Caddy ownership and admin health"
+          else
+            "vps-node expected Caddy admin TCP/#{port} listener is absent"
+          end
+          @blockers << blocker
+          port_result("vps-node.port.#{port}", "blocked", disposition, blocker, ["vps-node.sockets", "vps-node.caddy_runtime"])
+        end
+
+        observed_version = runtime["binary.version"].to_s
+        planned_version = @inputs.planned_caddy_version
+        if observed_version.empty? || observed_version == "unavailable"
+          warn_result("vps-node.caddy.version", "vps-node Caddy binary version was unavailable", ["vps-node.caddy_runtime"])
+        elsif observed_version == planned_version
+          pass_result("vps-node.caddy.version", "vps-node Caddy binary matches planned #{planned_version}", ["vps-node.caddy_runtime"])
+        else
+          warn_result(
+            "vps-node.caddy.version",
+            "vps-node Caddy binary #{observed_version} differs from planned #{planned_version}; preserve the live binary until side-by-side validation succeeds",
+            ["vps-node.caddy_runtime", "config/nc-m3/artifacts.yml"]
+          )
+        end
+      end
+
       def preservation_rules
+        vps_services = key_values(probe_output("vps-node", "services"))
+        vps_caddy = key_values(probe_output("vps-node", "caddy_runtime"))
+        add("preserve.vps.caddy.unit", vps_services["system.caddy.service.active"] == "active", "VPS Caddy service is not observed active", ["vps-node.services"])
+        add("preserve.vps.caddy.enabled", vps_services["system.caddy.service.enabled"] == "enabled", "VPS Caddy service is not observed enabled", ["vps-node.services"])
+        add("preserve.vps.caddy.admin", vps_caddy["admin.http"].to_s.match?(/\A2\d\d\z/), "VPS Caddy admin health is unavailable or failing", ["vps-node.caddy_runtime"])
+
         services = key_values(probe_output("asus-node", "services"))
         sockets = probe_output("asus-node", "sockets")
 
         add("preserve.tracker.unit", services["user.tracker.service.active"] == "active", "Tracker user service is not observed active", ["asus-node.services"])
+        add("preserve.tracker.enabled", services["user.tracker.service.enabled"] == "enabled", "Tracker user service is not observed enabled", ["asus-node.services"])
         tracker_code = services["health.tracker.http"].to_s
         add("preserve.tracker.http", tracker_code.match?(/\A[23]\d\d\z/), "Tracker loopback HTTP health is unavailable or failing", ["asus-node.services"])
         add("preserve.tracker.port", listening_port?(sockets, 3000), "Tracker protected TCP/3000 listener is absent", ["asus-node.sockets"])
+        add("preserve.tracker_edge_tunnel.unit", services["user.tracker-edge-tunnel.service.active"] == "active", "Tracker edge-tunnel user service is not observed active", ["asus-node.services"])
+        add("preserve.tracker_edge_tunnel.enabled", services["user.tracker-edge-tunnel.service.enabled"] == "enabled", "Tracker edge-tunnel user service is not observed enabled", ["asus-node.services"])
 
         add("preserve.docker", services["system.docker.service.active"] == "active", "Docker service is not observed active", ["asus-node.services"])
+        add("preserve.docker.enabled", services["system.docker.service.enabled"] == "enabled", "Docker service is not observed enabled", ["asus-node.services"])
+        add("preserve.containerd", services["system.containerd.service.active"] == "active", "containerd service is not observed active", ["asus-node.services"])
+        add("preserve.containerd.enabled", services["system.containerd.service.enabled"] == "enabled", "containerd service is not observed enabled", ["asus-node.services"])
         jellyfin_code = services["health.jellyfin.http"].to_s
         jellyfin_http = jellyfin_code.match?(/\A[234]\d\d\z/)
         add("preserve.jellyfin.http", jellyfin_http, "Jellyfin loopback HTTP health is unavailable or failing", ["asus-node.services"])
@@ -973,11 +1137,11 @@ module NodeControl
         add("preserve.jellyfin.udp", listening_port?(sockets, 7359), "Jellyfin UDP/7359 listener is absent", ["asus-node.sockets"])
 
         add("preserve.asus_tunnel", services["system.asus-reverse-tunnel.service.active"] == "active", "asus reverse-tunnel service is not observed active", ["asus-node.services"])
+        add("preserve.asus_tunnel.enabled", services["system.asus-reverse-tunnel.service.enabled"] == "enabled", "asus reverse-tunnel service is not observed enabled", ["asus-node.services"])
         legacy_loaded = services["system.reverse-ssh.service.load"] && services["system.reverse-ssh.service.load"] != "not-found"
         add("preserve.legacy_tunnel", legacy_loaded, "legacy reverse-ssh service is not present", ["asus-node.services"])
-        if legacy_loaded && services["system.reverse-ssh.service.active"] != "active"
-          warn_result("preserve.legacy_tunnel.health", "legacy reverse-ssh service is preserved but not active", ["asus-node.services"])
-        end
+        add("preserve.legacy_tunnel.active", services["system.reverse-ssh.service.active"] == "active", "legacy reverse-ssh service is not observed active", ["asus-node.services"])
+        add("preserve.legacy_tunnel.enabled", services["system.reverse-ssh.service.enabled"] == "enabled", "legacy reverse-ssh service is not observed enabled", ["asus-node.services"])
       end
 
       def vpn_rules
@@ -1021,6 +1185,22 @@ module NodeControl
         end
       end
 
+      def linux_memory_values(output)
+        values = {}
+        output.to_s.each_line do |line|
+          fields = line.split
+          values["memory_available_bytes"] = Integer(fields[6], exception: false) if fields[0] == "Mem:" && fields.length >= 7
+          values["swap_free_bytes"] = Integer(fields[3], exception: false) if fields[0] == "Swap:" && fields.length >= 4
+        end
+        values
+      end
+
+      def linux_root_available_bytes(output)
+        line = output.to_s.each_line.find { |candidate| candidate.split.last == "/" }
+        fields = line.to_s.split
+        Integer(fields[3], exception: false) if fields.length >= 6
+      end
+
       def normalize_hostname(value)
         value.to_s.strip.downcase.sub(/\.local\z/, "")
       end
@@ -1036,6 +1216,10 @@ module NodeControl
 
       def pass_result(id, detail, evidence_refs)
         @results << result(id, "satisfied", detail, evidence_refs)
+      end
+
+      def port_result(id, status, disposition, detail, evidence_refs)
+        @results << result(id, status, detail, evidence_refs).merge("port_disposition" => disposition)
       end
 
       def warn_result(id, detail, evidence_refs)
@@ -1126,6 +1310,12 @@ module NodeControl
           lines << "- None."
         else
           readiness.fetch("warnings").each { |warning| lines << "- #{warning}" }
+        end
+        port_results = readiness.fetch("results", []).select { |result| result.key?("port_disposition") }
+        lines.concat(["", "## Port disposition", "", "| Check | Disposition | Status | Detail |", "| --- | --- | --- | --- |"])
+        port_results.each do |result|
+          detail = result.fetch("detail").gsub("|", "\\|")
+          lines << "| `#{result.fetch("id")}` | `#{result.fetch("port_disposition")}` | `#{result.fetch("status")}` | #{detail} |"
         end
         lines.concat(["", "## User confirmations", "", "| Confirmation | Classification | Status |", "| --- | --- | --- |"])
         evidence.fetch("user_confirmations").each do |confirmation|

@@ -2,8 +2,9 @@ api_version: nodecontrol.io/v1alpha1
 kind: PlacementProfile
 metadata:
   name: vps-core
+  historical: true
 spec:
-  description: Public edge and complete control core on vps-node.
+  description: "Historical candidate: public edge and complete control core on vps-node."
   fixed_services:
     vps-node:
       - caddy

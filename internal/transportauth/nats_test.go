@@ -39,6 +39,7 @@ func TestValidateNATSURL(t *testing.T) {
 	}{
 		{name: "tracer internal", mode: runtimeconfig.Tracer, node: "mac-node", url: "nats://nats:4222"},
 		{name: "live external wss", mode: runtimeconfig.Live, node: "mac-node", url: "wss://bus.example.test"},
+		{name: "live private tls", mode: runtimeconfig.Live, node: "mac-node", url: "tls://asus-node:7422"},
 		{name: "live vps rejects plain NATS", mode: runtimeconfig.Live, node: "vps-node", url: "nats://127.0.0.1:4222", wantErr: true},
 		{name: "live asus internal", mode: runtimeconfig.Live, node: "asus-node", url: "nats://127.0.0.1:4222"},
 		{name: "inline credential", mode: runtimeconfig.Live, node: "asus-node", url: "nats://user:secret@nats:4222", wantErr: true},

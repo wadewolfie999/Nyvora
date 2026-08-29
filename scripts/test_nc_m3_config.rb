@@ -66,13 +66,25 @@ class NCM3ConfigTest < Minitest::Test
       )
       renderer.render(output)
       assert File.file?(File.join(output, "MANIFEST.sha256"))
-      assert File.file?(File.join(output, "vps/Caddyfile"))
+      assert File.file?(File.join(output, "vps/caddy/Caddyfile"))
+      assert File.file?(File.join(output, "vps/caddy/node-control.Caddyfile"))
+      assert File.file?(File.join(output, "vps/systemd/caddy.service.d/50-node-control.conf"))
+      refute File.exist?(File.join(output, "vps/systemd/node-control-caddy.service"))
       assert File.file?(File.join(output, "asus/quadlet/nc-controller.container"))
-      caddyfile = File.read(File.join(output, "vps/Caddyfile"))
-      assert_includes caddyfile, "control.infra.example.org"
-      refute_includes caddyfile, "unresolved"
+      caddy_root = File.read(File.join(output, "vps/caddy/Caddyfile"))
+      caddy_fragment = File.read(File.join(output, "vps/caddy/node-control.Caddyfile"))
+      caddy_drop_in = File.read(File.join(output, "vps/systemd/caddy.service.d/50-node-control.conf"))
+      assert_includes caddy_root, "import /etc/caddy/Caddyfile"
+      assert_includes caddy_root, "import /etc/node-control/caddy/node-control.Caddyfile"
+      assert_includes caddy_fragment, "control.infra.example.org"
+      refute_includes caddy_fragment, "admin 127.0.0.1"
+      assert_includes caddy_fragment, "/run/credentials/caddy.service/controller-proxy-proof"
+      assert_includes caddy_drop_in, "LoadCredentialEncrypted=controller-proxy-proof"
+      assert_includes caddy_drop_in, "caddy-2.11.4"
+      refute_includes caddy_fragment, "unresolved"
       manifest = File.read(File.join(output, "MANIFEST.sha256"))
       assert_includes manifest, "asus/quadlet/nc-controller.container"
+      assert_includes manifest, "vps/caddy/node-control.Caddyfile"
     end
   end
 
@@ -93,6 +105,7 @@ class NCM3ConfigTest < Minitest::Test
           "vps_provider_console_recovery" => true,
           "vps_firewall_control" => true,
           "asus_interactive_sudo" => true,
+          "asus_no_critical_simulation" => true,
           "age_offline_recovery_copy" => true,
           "asus_42665_owner_resolved" => true,
           "nats_credentials_generated" => true
@@ -100,6 +113,10 @@ class NCM3ConfigTest < Minitest::Test
         "records" => {
           "dns_evidence" => "test fixture",
           "recovery_evidence" => "test fixture",
+          "capacity_evidence" => "test fixture",
+          "privilege_evidence" => "test fixture",
+          "port_ownership_evidence" => "test fixture",
+          "caddy_preservation_evidence" => "test fixture",
           "secret_custody_evidence" => "test fixture",
           "nats_evidence" => "test fixture"
         }

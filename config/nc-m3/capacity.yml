@@ -1,0 +1,17 @@
+api_version: nodecontrol.io/v1alpha1
+kind: CapacityAdmission
+metadata:
+  name: split-edge-nc-m3
+spec:
+  asus-node:
+    minimum:
+      memory_available_bytes: 6442450944
+      swap_free_bytes: 3758096384
+      root_free_bytes: 21474836480
+    rendered_core_limits:
+      memory_mebibytes: 4992
+      note: Sum of the six NC-M3 container Memory limits; not measured usage.
+    rules:
+      - do_not_stop_existing_workloads_to_satisfy_admission
+      - require_explicit_no_critical_simulation_confirmation
+      - recheck_immediately_before_core_start

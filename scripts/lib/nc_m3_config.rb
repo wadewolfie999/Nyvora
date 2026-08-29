@@ -96,14 +96,18 @@ module NodeControl
       preconditions = current.fetch("preconditions", {})
       %w[
         wildcard_dns_control vps_provider_console_recovery vps_firewall_control
-        asus_interactive_sudo age_offline_recovery_copy asus_42665_owner_resolved
-        nats_credentials_generated
+        asus_interactive_sudo asus_no_critical_simulation age_offline_recovery_copy
+        asus_42665_owner_resolved nats_credentials_generated
       ].each do |name|
         findings << "precondition #{name} is not recorded true" unless preconditions[name] == true
       end
 
       records = current.fetch("records", {})
-      %w[dns_evidence recovery_evidence secret_custody_evidence nats_evidence].each do |name|
+      %w[
+        dns_evidence recovery_evidence capacity_evidence privilege_evidence
+        port_ownership_evidence caddy_preservation_evidence
+        secret_custody_evidence nats_evidence
+      ].each do |name|
         value = records[name].to_s.strip
         findings << "record #{name} is absent" if value.empty? || value == "pending"
       end
@@ -113,6 +117,11 @@ module NodeControl
       current = artifacts.fetch("spec")
       current.fetch("native_artifacts").each do |name, artifact|
         findings << "native artifact #{name} lacks a SHA-256" unless artifact.fetch("sha256", "").match?(/\A[0-9a-f]{64}\z/)
+        findings << "native artifact #{name} lacks an HTTPS source" unless artifact.fetch("source", "").start_with?("https://")
+        findings << "native artifact #{name} lacks a version" if artifact.fetch("version", "").to_s.empty?
+      end
+      current.fetch("asus_packages").each do |name, version|
+        findings << "asus package #{name} lacks an exact version" unless version.to_s.match?(/\A[^\s]+\z/)
       end
       current.fetch("external_images").each do |name, artifact|
         findings << "image #{name} lacks an immutable digest" unless immutable_digest?(artifact)
@@ -143,6 +152,11 @@ module NodeControl
       vps_allocated = current.dig("vps-node", "loopback_tcp").values
       vps_protected = current.dig("vps-node", "protected_existing_tcp").values
       findings << "VPS allocation overlaps protected listeners" unless (vps_allocated & vps_protected).empty?
+      caddy_admin = current.dig("vps-node", "expected_owned_tcp", "caddy_admin") || {}
+      unless caddy_admin["port"] == current.dig("vps-node", "loopback_tcp", "caddy_admin") &&
+          caddy_admin["service"] == "caddy.service" && caddy_admin["health"] == "caddy_admin_http_2xx"
+        findings << "VPS Caddy admin ownership contract drifted"
+      end
     end
 
     def validate_nats_config(findings)

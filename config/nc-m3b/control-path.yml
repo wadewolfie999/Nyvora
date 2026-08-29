@@ -1,0 +1,129 @@
+api_version: nodecontrol.io/v1alpha1
+kind: NC-M3BControlPath
+metadata:
+  name: private-three-node
+  milestone: NC-M3B
+  status: design-ready-live-bootstrap-blocked
+spec:
+  authority:
+    node: mac-node
+    role: authoritative-controller
+    capabilities:
+      create_authority: true
+      change_policy: true
+      enroll_nodes: true
+      grant_capabilities: true
+      authorize_execution: true
+  nodes:
+    mac-node:
+      role: authoritative-controller
+      identity_ref: control.identity.mac-node
+      services:
+        - controller
+        - operator-cli
+      can_create_authority: true
+      can_change_policy: true
+      can_enroll_nodes: true
+      can_grant_capabilities: true
+      can_authorize_execution: true
+    asus-node:
+      role: supporting-services-host
+      identity_ref: control.identity.asus-node
+      services:
+        - postgres
+        - nats
+        - node-agent
+      can_create_authority: false
+      can_change_policy: false
+      can_enroll_nodes: false
+      can_grant_capabilities: false
+      can_authorize_execution: false
+    vps-node:
+      role: private-topology-member
+      identity_ref: control.identity.vps-node
+      services:
+        - node-agent
+        - private-relay
+        - recovery
+      can_create_authority: false
+      can_change_policy: false
+      can_enroll_nodes: false
+      can_grant_capabilities: false
+      can_authorize_execution: false
+  transport:
+    model: brokered-private
+    broker_node: asus-node
+    endpoint_ref: control.endpoint.asus-nats-private
+    private_only: true
+    encryption: tls
+    public_ingress_required: false
+    paths:
+      mac-to-asus: brokered-via-asus-nats
+      mac-to-vps: brokered-via-asus-nats
+      asus-to-vps: brokered-via-asus-nats
+  authentication:
+    mechanism: nats-nkey-jwt-over-tls
+    identity_binding: one-scoped-machine-credential-per-node
+    credential_refs:
+      mac-node: control.credential.mac-nats
+      asus-node: control.credential.asus-nats
+      vps-node: control.credential.vps-nats
+    fail_closed_on:
+      - missing_credential
+      - invalid_credential
+      - unknown_node_identity
+      - identity_role_mismatch
+      - non_private_endpoint
+      - certificate_or_server_name_mismatch
+  authorization:
+    subject_namespace: nc.v1
+    publish:
+      mac-node:
+        - "nc.v1.node.<node>.command"
+        - "nc.v1.authority.>"
+      asus-node:
+        - "nc.v1.node.asus-node.heartbeat"
+        - "nc.v1.node.asus-node.result"
+      vps-node:
+        - "nc.v1.node.vps-node.heartbeat"
+        - "nc.v1.node.vps-node.result"
+    subscribe:
+      mac-node:
+        - "nc.v1.node.*.heartbeat"
+        - "nc.v1.node.*.result"
+        - "nc.v1.authority.>"
+      asus-node:
+        - "nc.v1.node.asus-node.command"
+      vps-node:
+        - "nc.v1.node.vps-node.command"
+    denied:
+      - "asus-node may not publish authority or command subjects"
+      - "vps-node may not publish authority or command subjects"
+      - "a node may not publish another node's heartbeat or result subject"
+      - "a node may not subscribe to another node's command subject"
+  bootstrap_boundary:
+    requires:
+      - existing owner-approved machine identity for each node
+      - distinct scoped NATS credential for each node
+      - private route to the ASUS NATS endpoint
+      - NATS account and subject ACL review
+    excludes:
+      - public DNS
+      - public TLS ingress
+      - Caddy
+      - frp
+      - authentik portal exposure
+  rotation_boundary:
+    owner_controlled: true
+    rule: replace-and-verify-one-node-credential-before-revoking-the-old-one
+    implementation_status: contract-only
+  authority_invariant: >-
+    During mac-node outage, workers and supporting services may complete
+    previously authorized transitions and record execution facts, but may not
+    create new authority, policy, enrollment, capability grants, or execution
+    authorization.
+  deferred:
+    - rootless-agent-execution-nc-m3c
+    - accepted-job-continuity-and-reconciliation-nc-m3d
+    - public-edge-dns-tls-ingress-and-authentik-nc-m3e
+    - foundation-acceptance-nc-m3f

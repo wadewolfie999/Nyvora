@@ -24,6 +24,9 @@ VPN, deployment, or provider changes.
 - Remote probes use read-only OS, hardware, service, socket, route, DNS, and
   HTTP GET checks. `sudo -n true` checks noninteractive administrative
   capability but does not run a privileged probe.
+- VPS Caddy inspection records the active unit, nonzero main PID, package and
+  binary versions, and HTTP status from the loopback admin configuration
+  endpoint. It never reads or prints the protected Caddyfile.
 - The Mac VPN state is observed through routes, tunnel interfaces, registered
   network connections, processes, and the configured SOCKS listener. The
   collector never toggles VPN state.
@@ -55,6 +58,12 @@ uses four explicit classifications:
 - `user_confirmation`: a true precondition from the real
   `config/nc-m3/bootstrap.yml`; and
 - `inferred`: a policy/readiness result derived from named evidence.
+
+Port results additionally carry one disposition: `free_candidate`,
+`expected_listener`, `protected_listener`, `collision`, or
+`missing_expected_listener`. VPS TCP/2019 is accepted only as an expected
+Caddy listener with matching service/admin evidence; a different live version
+is reported as drift rather than misclassified as a collision.
 
 The process exits 0 for `READY`, 3 for a completed but `BLOCKED` collection,
 and 2 for invalid repository/configuration input. A blocked report is still a
@@ -89,7 +98,11 @@ The collector can automatically inspect:
 - node identity and configured access-path success;
 - OS/kernel, CPU/load, RAM/swap, GPU visibility, disks/filesystems, and cgroup;
 - Podman/rootless prerequisites, tool presence, noninteractive sudo, services,
-  sockets, candidate-port conflicts, DNS resolution, and observed VPN routes;
+  locked package candidates, sockets, port disposition, DNS resolution, and
+  observed VPN routes;
+- asus available RAM, free swap, and root-disk headroom against the admission
+  thresholds in `config/nc-m3/capacity.yml`;
+- VPS Caddy ownership/admin health and live-versus-planned version drift;
 - process-level TCP/42665 ownership where the account can see it; and
 - Tracker/Jellyfin HTTP status, Docker state, protected listeners, and existing
   tunnel-unit state.
@@ -101,6 +114,7 @@ confirmation in the real bootstrap input:
 - independent VPS provider-console recovery;
 - provider firewall control;
 - interactive asus sudo availability;
+- that no critical HEP simulation or application workload is active;
 - offline age recovery custody;
 - exact accepted ownership/disposition for asus TCP/42665; and
 - completed NATS credential generation/custody.

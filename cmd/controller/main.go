@@ -14,6 +14,7 @@ import (
 	"nodecontrol.local/node-control/internal/httpauth"
 	"nodecontrol.local/node-control/internal/runtimeconfig"
 	"nodecontrol.local/node-control/internal/store"
+	"nodecontrol.local/node-control/internal/topology"
 )
 
 func main() {
@@ -24,6 +25,14 @@ func main() {
 	mode, err := runtimeconfig.FromEnvironment()
 	if err != nil {
 		logger.Error("runtime mode", "error", err)
+		os.Exit(2)
+	}
+	controllerNodeID := os.Getenv("NODE_ID")
+	if controllerNodeID == "" && mode == runtimeconfig.Tracer {
+		controllerNodeID = topology.AuthorityNode
+	}
+	if err := topology.RequireController(controllerNodeID); err != nil {
+		logger.Error("controller authority", "error", err)
 		os.Exit(2)
 	}
 	databaseURL := os.Getenv("DATABASE_URL")
@@ -49,7 +58,7 @@ func main() {
 	}
 	defer dataStore.Close()
 
-	controlServer, err := controller.New(ctx, dataStore, natsURL, os.Getenv("NATS_CREDS_FILE"), mode, logger)
+	controlServer, err := controller.New(ctx, dataStore, natsURL, os.Getenv("NATS_CREDS_FILE"), mode, controllerNodeID, logger)
 	if err != nil {
 		logger.Error("create controller", "error", err)
 		os.Exit(1)

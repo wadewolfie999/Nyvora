@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nodecontrol.local/schemas/nc-m3b-control-path.schema.json",
+  "title": "NC-M3BControlPath",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "kind", "metadata", "spec"],
+  "properties": {
+    "api_version": {"const": "nodecontrol.io/v1alpha1"},
+    "kind": {"const": "NC-M3BControlPath"},
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "milestone", "status"],
+      "properties": {
+        "name": {"const": "private-three-node"},
+        "milestone": {"const": "NC-M3B"},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "nodes", "transport", "authentication", "authorization", "bootstrap_boundary", "rotation_boundary", "authority_invariant", "deferred"],
+      "properties": {
+        "authority": {"$ref": "#/$defs/authority"},
+        "nodes": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/node"},
+          "minProperties": 3,
+          "maxProperties": 3
+        },
+        "transport": {"$ref": "#/$defs/transport"},
+        "authentication": {"$ref": "#/$defs/authentication"},
+        "authorization": {"$ref": "#/$defs/authorization"},
+        "bootstrap_boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requires", "excludes"],
+          "properties": {
+            "requires": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+            "excludes": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+          }
+        },
+        "rotation_boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owner_controlled", "rule", "implementation_status"],
+          "properties": {
+            "owner_controlled": {"const": true},
+            "rule": {"type": "string", "minLength": 1},
+            "implementation_status": {"const": "contract-only"}
+          }
+        },
+        "authority_invariant": {"type": "string", "minLength": 1},
+        "deferred": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "role", "capabilities"],
+      "properties": {
+        "node": {"const": "mac-node"},
+        "role": {"const": "authoritative-controller"},
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["create_authority", "change_policy", "enroll_nodes", "grant_capabilities", "authorize_execution"],
+          "properties": {
+            "create_authority": {"const": true},
+            "change_policy": {"const": true},
+            "enroll_nodes": {"const": true},
+            "grant_capabilities": {"const": true},
+            "authorize_execution": {"const": true}
+          }
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "identity_ref", "services", "can_create_authority", "can_change_policy", "can_enroll_nodes", "can_grant_capabilities", "can_authorize_execution"],
+      "properties": {
+        "role": {"type": "string", "minLength": 1},
+        "identity_ref": {"type": "string", "pattern": "^control\\.identity\\.[a-z-]+$"},
+        "services": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "can_create_authority": {"type": "boolean"},
+        "can_change_policy": {"type": "boolean"},
+        "can_enroll_nodes": {"type": "boolean"},
+        "can_grant_capabilities": {"type": "boolean"},
+        "can_authorize_execution": {"type": "boolean"}
+      }
+    },
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "broker_node", "endpoint_ref", "private_only", "encryption", "public_ingress_required", "paths"],
+      "properties": {
+        "model": {"const": "brokered-private"},
+        "broker_node": {"const": "asus-node"},
+        "endpoint_ref": {"const": "control.endpoint.asus-nats-private"},
+        "private_only": {"const": true},
+        "encryption": {"const": "tls"},
+        "public_ingress_required": {"const": false},
+        "paths": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mac-to-asus", "mac-to-vps", "asus-to-vps"],
+          "properties": {
+            "mac-to-asus": {"const": "brokered-via-asus-nats"},
+            "mac-to-vps": {"const": "brokered-via-asus-nats"},
+            "asus-to-vps": {"const": "brokered-via-asus-nats"}
+          }
+        }
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mechanism", "identity_binding", "credential_refs", "fail_closed_on"],
+      "properties": {
+        "mechanism": {"const": "nats-nkey-jwt-over-tls"},
+        "identity_binding": {"const": "one-scoped-machine-credential-per-node"},
+        "credential_refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mac-node", "asus-node", "vps-node"],
+          "properties": {
+            "mac-node": {"type": "string", "pattern": "^control\\.credential\\.[a-z-]+$"},
+            "asus-node": {"type": "string", "pattern": "^control\\.credential\\.[a-z-]+$"},
+            "vps-node": {"type": "string", "pattern": "^control\\.credential\\.[a-z-]+$"}
+          }
+        },
+        "fail_closed_on": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_namespace", "publish", "subscribe", "denied"],
+      "properties": {
+        "subject_namespace": {"const": "nc.v1"},
+        "publish": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}},
+        "subscribe": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}},
+        "denied": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    }
+  }
+}

@@ -6,14 +6,21 @@
    storage, ports, access, and capacity before selecting placement.
 3. **Trace locally** — prove the typed controller, policy, message, workflow,
    and node-runtime path without live mutations.
-4. **Bootstrap** — establish the minimum authenticated edge/control path and
-   enrol all nodes.
+4. **Foundation bootstrap** — execute the approved NC-M3A–NC-M3F sequence:
+   re-baseline authority, establish private control, prove rootless execution
+   and delegated continuity, then add public edge/identity and accept the
+   Foundation.
 5. **Stabilize asus** — add the narrow guardian and safe/development/research
    profiles in Batch 2.
 6. **Activate workloads** — first through the scoped NC-M6a Tracker prototype,
    then add live agent dispatch, general private applications, HEP scheduling,
    and project-scoped collaborators under separate gates.
 
-Current authorization stops after step 4 (NC-M3), except for the explicitly
-scoped NC-M6a Tracker milestone, which remains gated on NC-M1 and NC-M3 exit
-evidence.
+Current authorization stops after step 4 (the NC-M3A–NC-M3F Foundation
+sequence), except for the explicitly scoped NC-M6a Tracker milestone, which
+remains gated on NC-M1 and the applicable NC-M3E/public-edge exit evidence.
+
+The former bundled NC-M3 plan is superseded by the milestone definitions in
+[`docs/nyvora-roadmap-reconciliation-v2.md`](docs/nyvora-roadmap-reconciliation-v2.md).
+The repository-only reconciliation does not authorize live node, DNS, package,
+credential, firewall, VPN, service, or deployment changes.

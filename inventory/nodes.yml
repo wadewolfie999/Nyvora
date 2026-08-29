@@ -12,6 +12,8 @@ spec:
         - operator
         - development
         - connectivity-probe
+        - authoritative-controller
+      control_identity_ref: control.identity.mac-node
       account_mapping:
         vahid: vaheedgorgeen
       access:
@@ -34,8 +36,11 @@ spec:
       platform: linux
       roles:
         - public-edge
-        - capacity-gated-control-core-candidate
+        - private-topology-member
+        - authenticated-control-agent
+        - relay
         - break-glass-rendezvous
+      control_identity_ref: control.identity.vps-node
       account_mapping:
         vahid: ubuntu
       access:
@@ -70,9 +75,13 @@ spec:
       platform: linux
       roles:
         - private-application-host
+        - postgres-host
+        - nats-host
+        - private-topology-member
+        - authenticated-control-agent
         - agent-execution
         - future-hep-execution
-        - selected-control-core
+      control_identity_ref: control.identity.asus-node
       account_mapping:
         vahid: wade
       access:
@@ -126,25 +135,28 @@ spec:
       reason: retired during mature-platform re-baseline
 
   placement:
-    selected: split-edge
-    selected_at: "2026-08-21"
-    evidence_record: records/NC-M1.md
-    reason: vps-core fails minimum CPU and memory envelope; asus is the only plausible control-core host
+    selected: mac-authority
+    selected_at: "2026-08-29"
+    evidence_record: docs/nyvora-roadmap-reconciliation-v2.md
+    reason: approved Nyvora topology; mac-node is authoritative, asus-node hosts PostgreSQL/NATS and compute, and vps-node provides private membership plus deferred public edge/relay/recovery
     allowed_profiles:
-      - vps-core
-      - split-edge
+      - mac-authority
 
   flows:
     node_control:
-      direction: node-to-vps
-      transport: wss
-      public_port: 443
-      status: intended-unverified
+      direction: mac-authority-to-asus-and-vps-private-topology
+      transport: authenticated-private-control
+      control_path_manifest: config/nc-m3b/control-path.yml
+      status: repository-contract-ready-live-bootstrap-blocked
     asus_tunnel:
       direction: asus-node-to-vps-node
       transport: frp-wss
       public_port: 443
       status: frp-not-configured-existing-reverse-ssh-verified
+    public_edge:
+      direction: public-to-vps-edge-to-approved-relay
+      transport: https-and-wss
+      status: deferred-to-nc-m3e
     operator_direct:
       direction: mac-node-to-vps-node
       transport: https-and-wss

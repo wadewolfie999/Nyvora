@@ -3,25 +3,34 @@ kind: NC-M3Bootstrap
 metadata:
   name: primary
 spec:
-  placement_profile: split-edge
-  base_domain: example.invalid
+  placement_profile: mac-authority
+  control_path_manifest: config/nc-m3b/control-path.yml
+  # Public DNS/TLS/ingress are NC-M3E inputs and are intentionally absent here.
   operator: vahid
   age_recipients:
     - age1replacewithpublicrecipientonly
   preconditions:
+    mac_authority_and_recovery_procedure_approved: true
+    authenticated_private_three_node_control_path_designed: true
+    asus_postgres_and_nats_placement_approved: true
+    vps_private_topology_membership_designed: true
     wildcard_dns_control: false
-    vps_provider_console_recovery: false
-    vps_firewall_control: false
-    asus_interactive_sudo: false
-    age_offline_recovery_copy: false
-    asus_42665_owner_resolved: false
-    nats_credentials_generated: false
+    public_tls_and_ingress_control: false
+    authentik_human_identity_bootstrap: false
   records:
-    dns_evidence: pending
+    authority_placement_evidence: docs/nyvora-roadmap-reconciliation-v2.md
+    private_topology_evidence: pending
+    dns_evidence: deferred-to-nc-m3e
     recovery_evidence: pending
+    capacity_evidence: pending
+    privilege_evidence: pending
+    port_ownership_evidence: pending
+    caddy_preservation_evidence: pending
     secret_custody_evidence: pending
     nats_evidence: pending
 
-# This example is intentionally not renderable. Copy it to bootstrap.yml only
-# after replacing the non-secret public inputs and recording every prerequisite.
+# This is the NC-M3A authority/placement example and is intentionally not
+# consumable by the preserved legacy NC-M3 renderer. Copy it to bootstrap.yml
+# only after replacing non-secret inputs and recording every applicable
+# prerequisite for the decomposed milestone.
 # Never add private age identities, passwords, NATS credentials, or tokens.
