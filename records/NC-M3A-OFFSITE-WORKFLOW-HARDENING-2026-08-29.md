@@ -28,6 +28,9 @@ NC-M3B was not started.
 - Branch: `codex/nc-m3a-radicle-workflow`.
 - HEAD at the initial evidence capture: `5bbc22c25293b2bfe0d00920bc062aa42c751e16`.
 - Evidence-record commit: `ba37fb281dfeca005cb1a3d7f0db69623958d093`.
+- Handoff correction commit: `b79f4745261adccdae6295bc577e0316c51420e7`,
+  published as patch revision
+  `1f06773a7a2276e9cc09f0ea856b82cb1a7fdf3e`.
 - `main`: `be9192ecccce4f5cb21275fb913298409a203bd6` (unchanged).
 - Worktree was clean before this record; the existing branch already contains
   the current NC-M3A/reconciliation changes.
@@ -35,7 +38,8 @@ NC-M3B was not started.
   `rad:z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`.
 - Existing patch: `e917ae6caac006afe7aafdd7c9a03324ee23b555`, open and unmerged.
 - Current patch revision after publishing the evidence record:
-  `68aea178087e8a745ba965db0b06e2a7e232c75a`, based on
+  `68aea178087e8a745ba965db0b06e2a7e232c75a` (the later correction is
+  recorded above), based on
   `be9192ecccce4f5cb21275fb913298409a203bd6` and headed at
   `ba37fb281dfeca005cb1a3d7f0db69623958d093`.
 
