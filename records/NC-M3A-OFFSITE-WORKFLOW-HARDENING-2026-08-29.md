@@ -103,6 +103,12 @@ after this edit. Runtime `rad node connect` requests accepted the loopback
 addresses but did not establish a Radicle handshake; a directed sync therefore
 reported no reachable seed. This is not treated as replication proof.
 
+A separate disposable bridge test using loopback ports `18786` and `18787`,
+with the reverse leg pointed at the currently running Mac listener, produced
+the same result: no native Radicle peer socket or handshake. That disposable
+bridge was terminated after the test; only the durable 18776/18777 bridge
+remains.
+
 ## Radicle and exposure checks
 
 - Mac NID: `z6Mku97kQtFqjSL6M2DCD6MAnqwoZ4iWxEe3sE3m6z5CUNm9`.
