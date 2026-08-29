@@ -44,6 +44,17 @@ fail_check("retired node mapping is missing") unless legacy
 fail_check("retired node remains targetable") unless legacy["accepted_as_target"] == false
 fail_check("retired node replacement is not asus-node") unless legacy["replacement"] == "asus-node"
 
+placement = inventory.dig("spec", "placement") || {}
+fail_check("active placement is not mac-authority") unless placement["selected"] == "mac-authority"
+fail_check("legacy profiles remain allowed for active selection") unless placement["allowed_profiles"] == ["mac-authority"]
+fail_check("mac-node is not recorded as authoritative controller") unless nodes.dig("mac-node", "roles").include?("authoritative-controller")
+fail_check("asus-node is not recorded as authenticated private topology member") unless
+  nodes.dig("asus-node", "roles").include?("private-topology-member") &&
+  nodes.dig("asus-node", "roles").include?("authenticated-control-agent")
+fail_check("vps-node is not recorded as authenticated private topology member") unless
+  nodes.dig("vps-node", "roles").include?("private-topology-member") &&
+  nodes.dig("vps-node", "roles").include?("authenticated-control-agent")
+
 profiles = Dir.glob(File.join(ROOT, "config/placement-profiles/*.yml")).sort.map do |path|
   YAML.safe_load(File.read(path), aliases: false)
 end
@@ -52,14 +63,18 @@ fail_check("placement profiles are #{profile_names.inspect}") unless profile_nam
 
 approved = profiles.find { |profile| profile.dig("metadata", "name") == "mac-authority" }
 fail_check("approved mac-authority profile is not marked approved") unless approved.dig("metadata", "approved") == true
+fail_check("approved mac-authority profile is marked historical") if approved.dig("metadata", "historical") == true
 fail_check("approved profile does not place controller on mac-node") unless approved.dig("spec", "fixed_services", "mac-node").include?("controller")
 fail_check("approved profile does not place PostgreSQL on asus-node") unless approved.dig("spec", "fixed_services", "asus-node").include?("postgres")
 fail_check("approved profile does not place NATS on asus-node") unless approved.dig("spec", "fixed_services", "asus-node").include?("nats")
 fail_check("approved profile does not include vps-node agent") unless approved.dig("spec", "fixed_services", "vps-node").include?("node-agent")
+fail_check("approved profile places controller away from mac-node") if
+  profiles.any? { |profile| profile.dig("metadata", "name") == "mac-authority" && profile.dig("spec", "fixed_services").any? { |node, services| node != "mac-node" && services.include?("controller") } }
 
 profiles.each do |profile|
   if %w[split-edge vps-core].include?(profile.dig("metadata", "name"))
     fail_check("historical profile is not marked historical") unless profile.dig("metadata", "historical") == true
+    fail_check("historical profile is marked approved") if profile.dig("metadata", "approved") == true
   end
   ports = profile.dig("spec", "public_tcp_ports") || {}
   fail_check("VPS public ports drifted") unless ports["vps-node"] == [22, 80, 443]

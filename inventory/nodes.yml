@@ -12,6 +12,7 @@ spec:
         - operator
         - development
         - connectivity-probe
+        - authoritative-controller
       account_mapping:
         vahid: vaheedgorgeen
       access:
@@ -35,6 +36,7 @@ spec:
       roles:
         - public-edge
         - private-topology-member
+        - authenticated-control-agent
         - relay
         - break-glass-rendezvous
       account_mapping:
@@ -73,6 +75,8 @@ spec:
         - private-application-host
         - postgres-host
         - nats-host
+        - private-topology-member
+        - authenticated-control-agent
         - agent-execution
         - future-hep-execution
       account_mapping:
@@ -134,8 +138,6 @@ spec:
     reason: approved Nyvora topology; mac-node is authoritative, asus-node hosts PostgreSQL/NATS and compute, and vps-node provides private membership plus deferred public edge/relay/recovery
     allowed_profiles:
       - mac-authority
-      - vps-core
-      - split-edge
 
   flows:
     node_control:
