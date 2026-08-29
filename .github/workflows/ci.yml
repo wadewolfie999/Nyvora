@@ -19,6 +19,8 @@ jobs:
           ruby-version: '3.3'
       - name: Validate repository contracts
         run: ruby scripts/validate_repo.rb
+      - name: Validate adopted architecture baseline
+        run: ruby scripts/validate_architecture_baseline.rb
       - name: Run Ruby contract tests
         run: |
           ruby scripts/test_nc_m3_config.rb
