@@ -148,16 +148,16 @@ Additional UTC evidence timestamp: 2026-08-29T04:41:09Z.
 
 Final UTC evidence timestamp: 2026-08-29T04:49:49Z.
 
-- Repository HEAD is `2682c3ff33eb3aa7db7e3fe970ea0bfc5b77ba99` on
+- Repository HEAD at this evidence capture is
+  `650e80e4decec4d78b06dfba461633bf693a4e1d` on
   `codex/nc-m3a-radicle-workflow`. This pass adds explicit inventory roles for
   the authoritative Mac controller and authenticated private-topology members,
   restricts active profile selection to `mac-authority`, strengthens legacy
   profile rejection, and records NC-M3A's repository/live-replication exit
   evidence.
-- The existing open patch remains unmerged. Its latest verified head before
-  this repository pass was `42576a731c5762879491e8ab31c6b6e19db70990`; this
-  final pass must be published as the next patch revision after this record is
-  committed.
+- The existing open patch remains unmerged. Its latest verified head at this
+  evidence capture is `650e80e4decec4d78b06dfba461633bf693a4e1d`, with Radicle
+  revision `68a16d169772e83338a87fff5d41bd02446776c1`.
 - ASUS restart status: not performed. Radicle 1.10.1 has no `node restart`
   command; activation requires stopping the running process and starting it
   with the owner-held identity passphrase. The process was left running to
@@ -166,10 +166,9 @@ Final UTC evidence timestamp: 2026-08-29T04:49:49Z.
 - NC-M3A disposition: repository and live replication are complete; the
   persistent ASUS inbound-listener activation is pending secure owner-assisted
   restart. NC-M3B implementation has not started.
-- Publication completion: the final repository HEAD
-  `d829ea2e26ecf7226a44fc64e8ef32b1cb2bf617` is published on the existing
-  patch. Radicle reports patch revision
-  `75cf243ccaa600a0f8aa335b64233a8229ed85d4` with patch head `d829ea2`.
+- Focused commits in this completion pass are `2682c3f` (topology
+  enforcement), `d829ea2` (completion boundary), and `650e80e` (final
+  handoff). All are published on the existing open patch.
 
 ## Open and deferred work
 
