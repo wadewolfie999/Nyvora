@@ -87,22 +87,75 @@ Excluded pre-existing work remains uncommitted and untouched:
 The authorized branch publication initially failed because the existing signing
 identity was not available to the agent. After the owner authenticated the
 existing identity, the feature branch and patch were published to the verified
-private Nyvora project. No identity, listener, seed policy, or external
-configuration was changed by this task.
+private Nyvora project. At that earlier evidence capture, no identity,
+listener, seed policy, or external configuration had been changed.
+
+## Private ASUS replication extension
+
+Additional UTC evidence timestamp: 2026-08-29T04:41:09Z.
+
+- Source node: `mac-node` at `192.168.1.57`; NID
+  `z6Mku97kQtFqjSL6M2DCD6MAnqwoZ4iWxEe3sE3m6z5CUNm9`; sole accepted
+  Nyvora authority remains the Mac identity.
+- Replica node: `asus-node` at `192.168.1.50`; NID
+  `z6MkecLT6jhzsBR5KJmxWrpBiHH8GnX2g8vs3mUVuafXdGZD`.
+- Project: private RID `rad:z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`.
+- Project authorization: ASUS was added to the project allow list in identity
+  revision `0d6e3a9a152dc970fc8c217f98f8305a40d94f41`; the delegate set and
+  threshold remain unchanged, with only the Mac identity as delegate.
+- ASUS storage: the exact RID is present at
+  `/home/wade/.radicle/storage/z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`.
+  `refs/heads/main` is `be9192ecccce4f5cb21275fb913298409a203bd6`;
+  Mac-namespaced feature and patch refs include branch head
+  `4177b4d308c7d252eb2db091f6c6539fb7c4bf8b`; `refs/rad/id` is
+  `0d6e3a9a152dc970fc8c217f98f8305a40d94f41`; `git fsck --full` passed.
+- Patch: `e917ae6caac006afe7aafdd7c9a03324ee23b555`, open, base
+  `be9192ecccce4f5cb21275fb913298409a203bd6`, head
+  `4177b4d308c7d252eb2db091f6c6539fb7c4bf8b`; `rad patch show` on ASUS
+  reports the expected six-commit range.
+- Live synchronization: ASUS fetched the project from the Mac NID; Mac-side
+  inventory then returned the exact RID for ASUS. A Mac-side `rad sync` pinned
+  to the ASUS NID met the one-seed target and identified ASUS as the fetch
+  source. An independent disposable clone at
+  `/tmp/nyvora-radicle-asus-peer-clone-20260829` read ASUS-served `main` at
+  `be9192ecccce4f5cb21275fb913298409a203bd6` and passed `git fsck`.
+- ASUS seeding policy: exact Nyvora RID is `allow` with scope `followed`;
+  default policy remains `block`.
+- Persistent config: ASUS `/home/wade/.radicle/config.json` now has only the
+  private LAN listener `192.168.1.50:8776` and a direct peer entry for
+  `z6Mku97kQtFqjSL6M2DCD6MAnqwoZ4iWxEe3sE3m6z5CUNm9@192.168.1.57:8776`.
+  `externalAddresses` remains empty. The resulting SHA-256 is
+  `1757a9631f2bcd508f5f6d0b9ee48037a5630c37e6b6eefe05f43d2aabf7a149`;
+  rollback snapshot is
+  `/home/wade/.radicle/config.json.nc-m3a-replication-pre-20260829T042236Z`
+  with SHA-256
+  `af8a53f028d888e00bbf1a86982fbd0a3656a072f3888e18b23bb1889972c49a`.
+- Runtime limitation: the already-running ASUS process was deliberately not
+  interrupted, so it still reports no inbound listener. Its outbound private
+  connection to the Mac and project seeding are live. The staged listener and
+  peer entries take effect on the next secure ASUS Radicle restart.
+- Mac runtime config remains private-LAN-only at `192.168.1.57:8776` with
+  `externalAddresses` empty; its config SHA-256 is
+  `5f2c5772cca992c8ed2b30efc9da936e61a82e1d544cc4cbce5bf6792a39449c`.
+- V2Box forwarding was not used: direct private LAN connectivity succeeded,
+  and no local `127.0.0.1:1081` listener was present. No public listener,
+  public firewall rule, identity rotation, delegate change, quorum change, or
+  unrelated service change was made.
 
 ## Open and deferred work
 
-- Configure or authorize a seed for this private project if replica-level
-  synchronization is required; this task did not change seed policy.
+- Perform a secure ASUS Radicle restart when convenient to activate the staged
+  private listener and direct Mac peer entries; the current live outbound
+  session already proves project replication.
 - Review the open patch and record explicit acceptance before any merge.
-- Independently verify branch visibility, patch revision/head, default branch,
-  and synchronization/replica state.
+- Re-check branch visibility, patch revision/head, default branch, and
+  synchronization/replica state after any future ASUS restart.
 - Keep controller relocation, protocol/policy/PostgreSQL semantics, NATS ACLs,
   credentials, Quadlet deployment, frp/Caddy routing, and live operations in
   later NC-M3B–NC-M3E scopes.
 
 ## Recommended next review action
 
-Review patch `e917ae6caac006afe7aafdd7c9a03324ee23b555` at head `dffbc98` on
+Review patch `e917ae6caac006afe7aafdd7c9a03324ee23b555` at head `4177b4d` on
 `codex/nc-m3a-radicle-workflow`. Do not merge into `main` until explicit
 architectural and review acceptance is recorded.
