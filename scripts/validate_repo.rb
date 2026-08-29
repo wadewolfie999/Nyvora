@@ -17,6 +17,8 @@ required = %w[
   inventory/nodes.yml policies/change-contract.md interface/CLI.md
   runbooks/collect-nc-m3-preflight.md scripts/collect_nc_m3_preflight.rb
   scripts/test_collect_nc_m3_preflight.rb
+  config/nc-m3/capacity.yml
+  config/placement-profiles/mac-authority.yml
   config/placement-profiles/vps-core.yml
   config/placement-profiles/split-edge.yml
   schemas/node-inventory.schema.json
@@ -46,9 +48,19 @@ profiles = Dir.glob(File.join(ROOT, "config/placement-profiles/*.yml")).sort.map
   YAML.safe_load(File.read(path), aliases: false)
 end
 profile_names = profiles.map { |profile| profile.dig("metadata", "name") }.sort
-fail_check("placement profiles are #{profile_names.inspect}") unless profile_names == %w[split-edge vps-core]
+fail_check("placement profiles are #{profile_names.inspect}") unless profile_names == %w[mac-authority split-edge vps-core]
+
+approved = profiles.find { |profile| profile.dig("metadata", "name") == "mac-authority" }
+fail_check("approved mac-authority profile is not marked approved") unless approved.dig("metadata", "approved") == true
+fail_check("approved profile does not place controller on mac-node") unless approved.dig("spec", "fixed_services", "mac-node").include?("controller")
+fail_check("approved profile does not place PostgreSQL on asus-node") unless approved.dig("spec", "fixed_services", "asus-node").include?("postgres")
+fail_check("approved profile does not place NATS on asus-node") unless approved.dig("spec", "fixed_services", "asus-node").include?("nats")
+fail_check("approved profile does not include vps-node agent") unless approved.dig("spec", "fixed_services", "vps-node").include?("node-agent")
 
 profiles.each do |profile|
+  if %w[split-edge vps-core].include?(profile.dig("metadata", "name"))
+    fail_check("historical profile is not marked historical") unless profile.dig("metadata", "historical") == true
+  end
   ports = profile.dig("spec", "public_tcp_ports") || {}
   fail_check("VPS public ports drifted") unless ports["vps-node"] == [22, 80, 443]
   fail_check("asus has public ports") unless ports["asus-node"] == []
@@ -60,6 +72,24 @@ fail_check("asus NC-M3 public ports are non-empty") unless ports.dig("asus-node"
 asus_allocated = ports.dig("asus-node", "loopback_tcp").values
 asus_protected = ports.dig("asus-node", "protected_existing_tcp").values
 fail_check("asus NC-M3 ports overlap protected listeners") unless (asus_allocated & asus_protected).empty?
+caddy_admin = ports.dig("vps-node", "expected_owned_tcp", "caddy_admin") || {}
+fail_check("VPS Caddy admin ownership contract drifted") unless
+  caddy_admin == {"port" => 2019, "service" => "caddy.service", "health" => "caddy_admin_http_2xx"}
+
+capacity = YAML.safe_load(File.read(File.join(ROOT, "config/nc-m3/capacity.yml")), aliases: false)
+minimum = capacity.dig("spec", "asus-node", "minimum") || {}
+expected_minimum = {
+  "memory_available_bytes" => 6 * 1024**3,
+  "swap_free_bytes" => (3.5 * 1024**3).to_i,
+  "root_free_bytes" => 20 * 1024**3
+}
+fail_check("asus NC-M3 capacity admission drifted") unless minimum == expected_minimum
+declared_limit = capacity.dig("spec", "asus-node", "rendered_core_limits", "memory_mebibytes")
+rendered_limit = Dir.glob(File.join(ROOT, "deploy/nc-m3/templates/asus/quadlet/*.container.erb")).sum do |path|
+  match = File.read(path).match(/^Memory=(\d+)m$/)
+  match ? match[1].to_i : 0
+end
+fail_check("asus rendered memory limit total drifted") unless rendered_limit == declared_limit
 
 skill_dirs = Dir.glob(File.join(ROOT, ".agents/skills/node-control-*"), File::FNM_DOTMATCH).sort
 fail_check("expected four repository skills") unless skill_dirs.length == 4

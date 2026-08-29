@@ -17,9 +17,9 @@
     "spec": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["placement_profile", "base_domain", "operator", "age_recipients", "preconditions", "records"],
+      "required": ["placement_profile", "operator", "age_recipients", "preconditions", "records"],
       "properties": {
-        "placement_profile": {"const": "split-edge"},
+        "placement_profile": {"const": "mac-authority"},
         "base_domain": {"type": "string", "minLength": 4, "maxLength": 253},
         "operator": {"const": "vahid"},
         "age_recipients": {
@@ -31,12 +31,19 @@
         "preconditions": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["wildcard_dns_control", "vps_provider_console_recovery", "vps_firewall_control", "asus_interactive_sudo", "age_offline_recovery_copy", "asus_42665_owner_resolved", "nats_credentials_generated"],
+          "required": ["mac_authority_and_recovery_procedure_approved", "authenticated_private_three_node_control_path_designed", "asus_postgres_and_nats_placement_approved", "vps_private_topology_membership_designed"],
           "properties": {
-            "wildcard_dns_control": {"const": true},
+            "mac_authority_and_recovery_procedure_approved": {"const": true},
+            "authenticated_private_three_node_control_path_designed": {"const": true},
+            "asus_postgres_and_nats_placement_approved": {"const": true},
+            "vps_private_topology_membership_designed": {"const": true},
+            "wildcard_dns_control": {"type": "boolean"},
+            "public_tls_and_ingress_control": {"type": "boolean"},
+            "authentik_human_identity_bootstrap": {"type": "boolean"},
             "vps_provider_console_recovery": {"const": true},
             "vps_firewall_control": {"const": true},
             "asus_interactive_sudo": {"const": true},
+            "asus_no_critical_simulation": {"const": true},
             "age_offline_recovery_copy": {"const": true},
             "asus_42665_owner_resolved": {"const": true},
             "nats_credentials_generated": {"const": true}
@@ -45,10 +52,16 @@
         "records": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["dns_evidence", "recovery_evidence", "secret_custody_evidence", "nats_evidence"],
+          "required": ["authority_placement_evidence", "private_topology_evidence", "dns_evidence", "recovery_evidence", "capacity_evidence", "privilege_evidence", "port_ownership_evidence", "caddy_preservation_evidence", "secret_custody_evidence", "nats_evidence"],
           "properties": {
+            "authority_placement_evidence": {"type": "string", "minLength": 1},
+            "private_topology_evidence": {"type": "string", "minLength": 1},
             "dns_evidence": {"type": "string", "minLength": 1},
             "recovery_evidence": {"type": "string", "minLength": 1},
+            "capacity_evidence": {"type": "string", "minLength": 1},
+            "privilege_evidence": {"type": "string", "minLength": 1},
+            "port_ownership_evidence": {"type": "string", "minLength": 1},
+            "caddy_preservation_evidence": {"type": "string", "minLength": 1},
             "secret_custody_evidence": {"type": "string", "minLength": 1},
             "nats_evidence": {"type": "string", "minLength": 1}
           }

@@ -13,6 +13,7 @@ connectivity visibility, and bounded agentic execution.
 - `blocked`: prerequisite failed; no safe continuation at that boundary.
 - `pending`: sequenced but not started.
 - `deferred`: outside the current authorization.
+- `superseded`: retained historical material replaced by an approved plan.
 
 ## Batch 1 — Foundation and bootstrap
 
@@ -42,8 +43,9 @@ Recorded evidence: `records/NC-M0.md`.
 Exit evidence: each required fact is confirmed, unavailable, or localized to a
 specific failure; the selected placement profile has satisfied prerequisites.
 
-Selected profile: `split-edge`. Deployment prerequisites and current failures
-are recorded rather than waived. Recorded evidence: `records/NC-M1.md`.
+Historical selected profile: `split-edge`. Its deployment prerequisites and
+current failures are recorded rather than waived; the literal placement is
+superseded by the approved Nyvora model. Recorded evidence: `records/NC-M1.md`.
 
 ### NC-M2 — Local tracer (`complete`)
 
@@ -59,7 +61,10 @@ dispatch completes through the simulated control path.
 Both placement profiles passed the same repeatable suite with immutable OCI
 inputs. Recorded evidence: `records/NC-M2.md`.
 
-### NC-M3 — Edge and control bootstrap (`blocked`)
+### NC-M3 — Edge and control bootstrap (`superseded`; blocked historical umbrella)
+
+This section retains the former bundled NC-M3 scope and dated evidence for
+traceability. It is not the current execution plan.
 
 - Plan/apply/verify/record the selected placement profile one node boundary at
   a time.
@@ -79,8 +84,9 @@ are not satisfied. Existing Tracker and recovery-tunnel services were found and
 reserved from collision. Recorded evidence and the unexecuted staged plan:
 `records/NC-M3.md`.
 
-Repository-only prerequisite work has since added live-default credential and
-transport gates, authenticated controller/workflow boundaries, non-simulated
+Repository-only prerequisite work for the legacy split-edge candidate has since
+added live-default credential and transport gates, authenticated
+controller/workflow boundaries, non-simulated
 host observation support, an immutable external artifact lock, collision-free
 candidate ports, and a deterministic readiness check. The check remains
 blocked on the real bootstrap input and live amd64 repository-image digests;
@@ -95,6 +101,54 @@ The next repository-only OBSERVE prerequisite is now implemented as
 three-node evidence bundle through inventory-defined operator paths and reports
 READY/BLOCKED without applying changes. Its existence does not refresh the
 dated baseline; only an explicitly run collection can do that.
+
+Repository preparation resumed on 2026-08-24. Local commit `be9192e` preserves
+the tested pre-change Batch 1 baseline. The working-tree candidate now treats
+VPS TCP/2019 as an expected Caddy listener only with unit/PID/admin proof,
+reports the observed Caddy 2.6.2 versus planned 2.11.4 drift, renders an
+independently removable fragment/drop-in for the existing `caddy.service`,
+locks operator tools and asus rootless packages, and enforces the initial asus
+capacity envelope. No live node, provider, DNS, VPN, credential, package, or
+service was changed.
+
+Current hard stop: Vahid has not supplied the exact controlled base domain.
+NC-M3E and public operations therefore remain `blocked`; no live APPLY may
+begin and Batch 1 is not complete. The approved reconciliation allows private
+NC-M3B–NC-M3D planning and bootstrap design to proceed without treating DNS,
+TLS, public ingress, or authentik as their prerequisite. Evidence:
+`records/NC-M3-DNS-GATE-2026-08-24.md`.
+
+The old placement conclusion and one-shot execution order are now superseded by
+the approved Nyvora model. Preserve the implementation and evidence as
+candidate material, but use the decomposed milestones and acceptance criteria
+in [`docs/nyvora-roadmap-reconciliation-v2.md`](docs/nyvora-roadmap-reconciliation-v2.md):
+
+- NC-M3A — authority and placement re-baseline;
+- NC-M3B — private controller and PostgreSQL/NATS bootstrap;
+- NC-M3C — rootless compute and agent execution;
+- NC-M3D — delegated continuity and reconciliation;
+- NC-M3E — public edge, DNS/TLS, ingress, and authentik;
+- NC-M3F — Foundation acceptance and closeout.
+
+NC-M3E no longer blocks private NC-M3B–NC-M3D planning or bootstrap design.
+It remains a prerequisite for public operations and the corresponding
+acceptance claims. This repository-only update does not refresh dated node or
+DNS evidence and does not authorize APPLY.
+
+### NC-M3A — Authority and Placement Re-baseline (`active; repository-only`)
+
+The approved active placement is `mac-authority`: `mac-node` is the sole
+authoritative controller; `asus-node` owns PostgreSQL, NATS, supporting
+services, compute, and an authenticated agent; `vps-node` is a private
+authenticated topology member with public edge, relay, and recovery duties
+deferred to NC-M3E. `split-edge` and `vps-core` remain historical candidates
+only. Private NC-M3B–NC-M3D work must not require public DNS, TLS, ingress, or
+authentik.
+
+During `mac-node` outage, workers and supporting services may complete
+previously authorized transitions and record execution facts, but may not
+create new authority, policy, enrollment, capability grants, or execution
+authorization.
 
 ## Batch 2 — Scoped application authorization
 
@@ -117,7 +171,8 @@ only and does not authorize the other Batch 2 items.
 - The rootless OCI/Quadlet path remains deferred because the asus account does
   not currently have a usable rootless container runtime; this bounded Node
   fallback is Tracker-specific and must not be generalized as NC-M6.
-- Require fresh NC-M1 evidence and a verified NC-M3 edge/control path before
+- Require fresh NC-M1 evidence and verified applicable NC-M3E public-edge
+  evidence before
   APPLY. Do not replace or remove the existing legacy reverse-SSH services as
   part of this milestone.
 - Keep rollback to the existing ChatGPT-hosted Tracker deployment available.

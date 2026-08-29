@@ -1,0 +1,40 @@
+api_version: nodecontrol.io/v1alpha1
+kind: PlacementProfile
+metadata:
+  name: mac-authority
+  approved: true
+spec:
+  description: mac-node is the sole authoritative controller; asus-node hosts PostgreSQL, NATS, supporting services, compute, and an authenticated agent; vps-node is a private authenticated topology member with deferred public edge, relay, and recovery roles.
+  fixed_services:
+    mac-node:
+      - controller
+      - operator-cli
+    asus-node:
+      - postgres
+      - nats
+      - supporting-services
+      - node-agent
+      - compute
+    vps-node:
+      - node-agent
+      - private-relay
+      - caddy-deferred-nc-m3e
+      - frps-deferred-nc-m3e
+  public_tcp_ports:
+    vps-node: [22, 80, 443]
+    asus-node: []
+    mac-node: []
+  selection_preconditions:
+    - mac_authority_and_recovery_procedure_approved
+    - authenticated_private_three_node_control_path_designed
+    - asus_postgres_and_nats_placement_approved
+    - vps_private_topology_membership_designed
+  deferred_preconditions:
+    - wildcard_dns_control_available
+    - public_tls_and_ingress_control_available
+    - authentik_human_identity_bootstrap_available
+  failure_semantics:
+    control_state_host: postgres-on-asus-node
+    authority_host: mac-node
+    automatic_failover: false
+    mac_loss_effect: previously-authorized-transitions-and-facts-only

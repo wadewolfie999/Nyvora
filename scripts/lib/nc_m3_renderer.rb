@@ -31,10 +31,6 @@ module NodeControl
       @configuration.endpoint("tunnel")
     end
 
-    def vps_caddy_admin
-      @configuration.port("vps-node", "loopback_tcp", "caddy_admin")
-    end
-
     def vps_frps_transport
       @configuration.port("vps-node", "loopback_tcp", "frps_transport")
     end
@@ -86,9 +82,10 @@ module NodeControl
 
   class NCM3Renderer
     TEMPLATE_MAP = {
-      "vps/Caddyfile.erb" => "vps/Caddyfile",
+      "vps/Caddyfile.erb" => "vps/caddy/Caddyfile",
+      "vps/node-control.Caddyfile.erb" => "vps/caddy/node-control.Caddyfile",
       "vps/frps.toml.erb" => "vps/frps.toml",
-      "vps/node-control-caddy.service.erb" => "vps/systemd/node-control-caddy.service",
+      "vps/caddy.service-drop-in.erb" => "vps/systemd/caddy.service.d/50-node-control.conf",
       "vps/node-control-frps.service.erb" => "vps/systemd/node-control-frps.service",
       "asus/frpc.toml.erb" => "asus/frpc.toml",
       "asus/node-control-frpc.service.erb" => "asus/systemd/user/node-control-frpc.service",
@@ -102,6 +99,9 @@ module NodeControl
     end
 
     def render(output_directory)
+      unless %w[split-edge vps-core].include?(@configuration.spec.fetch("placement_profile"))
+        raise ArgumentError, "NC-M3 legacy renderer cannot render the approved placement; use the decomposed NC-M3A–NC-M3F path"
+      end
       blockers = @configuration.blockers
       raise ArgumentError, "NC-M3 render blocked: #{blockers.join('; ')}" unless blockers.empty?
       raise ArgumentError, "output directory already exists: #{output_directory}" if File.exist?(output_directory)

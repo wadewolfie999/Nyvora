@@ -12,15 +12,19 @@ PLANS.md                     milestone status and exit evidence
 ROADMAP.md                   compact platform sequence
 DECISIONS.md                 consequential architecture decisions
 inventory/nodes.yml          stable node identity and known access paths
-config/placement-profiles/   tested control-plane placements
+config/placement-profiles/   approved and historical control-plane placements
 config/nc-m3/                NC-M3 bootstrap, ports, and artifact locks
 docs/architecture.md         responsibility and dependency boundaries
 docs/baseline.md             dated observations and unresolved facts
 interface/CLI.md             operator/API behavior
 schemas/                     versioned public resource contracts
-deploy/nc-m3/                non-applying split-edge staging boundary
+deploy/nc-m3/                preserved legacy candidate staging boundary
 policies/                    change and access authority
 runbooks/                    inspection, recovery, and rollout procedures
+runbooks/radicle-development-and-handoff.md
+                             Radicle branch, patch, sync, and handoff lifecycle
+records/radicle-handoff-template.md
+                             secret-free Radicle review handoff template
 .agents/skills/              repository-scoped Codex workflows
 scripts/                     deterministic repository validation
 ```

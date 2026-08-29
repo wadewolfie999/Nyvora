@@ -34,7 +34,8 @@ spec:
       platform: linux
       roles:
         - public-edge
-        - capacity-gated-control-core-candidate
+        - private-topology-member
+        - relay
         - break-glass-rendezvous
       account_mapping:
         vahid: ubuntu
@@ -70,9 +71,10 @@ spec:
       platform: linux
       roles:
         - private-application-host
+        - postgres-host
+        - nats-host
         - agent-execution
         - future-hep-execution
-        - selected-control-core
       account_mapping:
         vahid: wade
       access:
@@ -126,25 +128,29 @@ spec:
       reason: retired during mature-platform re-baseline
 
   placement:
-    selected: split-edge
-    selected_at: "2026-08-21"
-    evidence_record: records/NC-M1.md
-    reason: vps-core fails minimum CPU and memory envelope; asus is the only plausible control-core host
+    selected: mac-authority
+    selected_at: "2026-08-29"
+    evidence_record: docs/nyvora-roadmap-reconciliation-v2.md
+    reason: approved Nyvora topology; mac-node is authoritative, asus-node hosts PostgreSQL/NATS and compute, and vps-node provides private membership plus deferred public edge/relay/recovery
     allowed_profiles:
+      - mac-authority
       - vps-core
       - split-edge
 
   flows:
     node_control:
-      direction: node-to-vps
-      transport: wss
-      public_port: 443
-      status: intended-unverified
+      direction: mac-authority-to-asus-and-vps-private-topology
+      transport: authenticated-private-control
+      status: design-approved-implementation-pending
     asus_tunnel:
       direction: asus-node-to-vps-node
       transport: frp-wss
       public_port: 443
       status: frp-not-configured-existing-reverse-ssh-verified
+    public_edge:
+      direction: public-to-vps-edge-to-approved-relay
+      transport: https-and-wss
+      status: deferred-to-nc-m3e
     operator_direct:
       direction: mac-node-to-vps-node
       transport: https-and-wss
