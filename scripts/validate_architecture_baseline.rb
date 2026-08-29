@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "open3"
+require "digest"
 
 ROOT = File.expand_path("..", __dir__)
 
@@ -58,6 +59,11 @@ required_markers = [
 required_markers.each do |marker|
   fail_check("DOCX is missing required marker #{marker.inspect}") unless xml.include?(marker)
 end
+
+adoption_record = File.read(File.join(ROOT, "records/NYVORA-BASELINE-ADOPTION-2026-08-30.md"))
+recorded_digest = adoption_record[/Corrected SHA-256: `([0-9a-f]{64})`/, 1]
+actual_digest = Digest::SHA256.file(docx).hexdigest
+fail_check("adoption record digest does not match corrected DOCX") unless recorded_digest == actual_digest
 
 stale_markers = [
   "Wade",

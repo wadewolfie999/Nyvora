@@ -16,7 +16,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@e5517072e87f198d9533967ae13d97c11b604005 # v1.99.0
         with:
-          ruby-version: '3.3'
+          ruby-version: '3.1'
       - name: Validate preserved legacy contracts (not baseline compliance)
         run: ruby scripts/validate_repo.rb
       - name: Validate adopted architecture baseline

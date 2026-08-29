@@ -47,6 +47,9 @@ current pins are `actions/checkout` fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09,
 2031cfc080254a8a887f58cffee85186f0e49e48. Baseline lint rejects unpinned
 workflow actions.
 
+CI runs on the supported Ruby 3.1 runtime declared by the pinned setup
+action; the repository's governance scripts use Ruby's standard library only.
+
 GitHub secret scanning and push protection are enabled for the public
 repository, and pull requests run the pinned dependency-review action.
 
