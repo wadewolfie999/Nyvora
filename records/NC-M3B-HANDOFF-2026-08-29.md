@@ -80,6 +80,24 @@ Observed in the repository:
   `secrets/nc-m3.enc.yml`, or live `config/nc-m3/bootstrap.yml` existed;
   the new NC-M3B contract is now present at `config/nc-m3b/control-path.yml`.
 
+## Continuation revalidation
+
+- UTC revalidation timestamp: 2026-08-29T12:18:02Z.
+- Repository remains clean at `2186bd7251de3754205eadc4225100052907912b`;
+  canonical `main` remains `be9192ecccce4f5cb21275fb913298409a203bd6`.
+- Mac still routes by default through `utun4`, the Radicle node is stopped,
+  and only the existing loopback bridge at `127.0.0.1:18776` is listening.
+- ASUS still reports `postgresql.service` and `nats.service` inactive/not
+  installed, with no `/etc/nats`, `/etc/postgresql`, or Node Control
+  configuration; `asus-reverse-tunnel.service` and `reverse-ssh.service`
+  remain active and enabled. Its existing Radicle listener remains
+  `192.168.1.50:8776`.
+- VPS still has its existing Caddy/SSH surface and no Node Control NATS,
+  PostgreSQL, Radicle, or frp service/listener.
+- These observations are unchanged from the prior blocker; no live service,
+  network, identity, credential, firewall, or VPN action was taken during
+  this revalidation.
+
 ## Implemented repository changes
 
 - Added the NC-M3B private brokered control-path manifest and JSON schema.
