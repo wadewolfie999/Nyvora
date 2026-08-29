@@ -169,6 +169,10 @@ Final UTC evidence timestamp: 2026-08-29T04:57:07Z.
 - Focused commits in this completion pass are `2682c3f` (topology
   enforcement), `d829ea2` (completion boundary), and `650e80e` (final
   handoff). All are published on the existing open patch.
+- Final publication verification at `2026-08-29T04:57:44Z` also includes
+  `2ec6a78` and `5c7a87b`; the published patch head is
+  `5c7a87bd5cdcf405d1991bd7ceb67dc1c48c9b2e`, revision
+  `31a8b43e897e32f86c552fa7e7d5cadfdcfab09d`.
 
 ## Open and deferred work
 
