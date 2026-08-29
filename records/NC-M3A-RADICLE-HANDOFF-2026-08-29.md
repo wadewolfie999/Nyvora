@@ -8,11 +8,11 @@ remain separate review decisions.
 
 ## Verified repository state
 
-- UTC evidence timestamp: 2026-08-29T03:56:39Z
+- UTC evidence timestamp: 2026-08-29T03:57:24Z
 - Git root: `/Users/vaheedgorgeen/libs/Nyvora`
 - Branch: `codex/nc-m3a-radicle-workflow`
 - Base branch: `main`
-- HEAD at evidence capture: `dffbc986fcf181951f7893995599c932504c9838`
+- HEAD at evidence capture: `09b785f2884d1a35949728b78f25e2bb92f4866a`
 - Base HEAD: `be9192ecccce4f5cb21275fb913298409a203bd6`
 - Git remotes: `rad` configured for `rad:z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`
 - Worktree: dirty only from excluded pre-existing work listed below
@@ -23,6 +23,7 @@ remain separate review decisions.
 2. `47c1ac9aeb6efa2328eecb2b28ebf3df920b1b96` — Document Radicle development and handoff workflow
 3. `6efdefe730f81b23f0f7ed9e96b53851436d83f2` — Record NC-M3A Radicle handoff state
 4. `dffbc986fcf181951f7893995599c932504c9838` — Refresh NC-M3A Radicle project handoff
+5. `09b785f2884d1a35949728b78f25e2bb92f4866a` — Record verified NC-M3A Radicle patch state
 
 This refresh is committed after the evidence capture above; the branch tip
 contains the refreshed record.
@@ -74,9 +75,9 @@ Excluded pre-existing work remains uncommitted and untouched:
 - Nyvora project name/RID: verified as private `rad:z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`
 - Local Radicle remote: verified as `rad://z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`
 - Radicle default branch: `rad/main` at `be9192ecccce4f5cb21275fb913298409a203bd6`
-- Published feature branch: `codex/nc-m3a-radicle-workflow` at `dffbc986fcf181951f7893995599c932504c9838`
+- Published feature branch: `codex/nc-m3a-radicle-workflow` at `09b785f2884d1a35949728b78f25e2bb92f4866a`
 - Patch ID: `e917ae6caac006afe7aafdd7c9a03324ee23b555`
-- Patch revision/head: revision `e917ae6caac006afe7aafdd7c9a03324ee23b555`, head `dffbc986fcf181951f7893995599c932504c9838`
+- Patch revision/head: revision `a7aa20d5d441d65c8327eed33faf703976de0436`, head `09b785f2884d1a35949728b78f25e2bb92f4866a`
 - Canonical/default branch state: unchanged at baseline; no merge performed
 - Patch status: open; no reviews recorded
 - Synchronization: default fetch/announce failed with `no candidate seeds were found to fetch from`; announce-only returned success but reported no seeds
