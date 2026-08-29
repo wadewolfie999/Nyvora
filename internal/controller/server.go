@@ -18,20 +18,25 @@ import (
 	"nodecontrol.local/node-control/internal/protocol"
 	"nodecontrol.local/node-control/internal/runtimeconfig"
 	"nodecontrol.local/node-control/internal/store"
+	"nodecontrol.local/node-control/internal/topology"
 	"nodecontrol.local/node-control/internal/transportauth"
 )
 
 type Server struct {
-	store  *store.Store
-	nats   *nats.Conn
-	js     nats.JetStreamContext
-	logger *slog.Logger
-	mux    *http.ServeMux
-	mode   runtimeconfig.Mode
+	store           *store.Store
+	nats            *nats.Conn
+	js              nats.JetStreamContext
+	logger          *slog.Logger
+	mux             *http.ServeMux
+	mode            runtimeconfig.Mode
+	authorityNodeID string
 }
 
-func New(ctx context.Context, dataStore *store.Store, natsURL, credentialsFile string, mode runtimeconfig.Mode, logger *slog.Logger) (*Server, error) {
-	if err := transportauth.ValidateNATSURL(mode, "asus-node", natsURL); err != nil {
+func New(ctx context.Context, dataStore *store.Store, natsURL, credentialsFile string, mode runtimeconfig.Mode, authorityNodeID string, logger *slog.Logger) (*Server, error) {
+	if err := topology.RequireController(authorityNodeID); err != nil {
+		return nil, err
+	}
+	if err := transportauth.ValidateNATSURL(mode, authorityNodeID, natsURL); err != nil {
 		return nil, err
 	}
 	credentials, err := transportauth.NATSOptions(mode, credentialsFile)
@@ -58,7 +63,7 @@ func New(ctx context.Context, dataStore *store.Store, natsURL, credentialsFile s
 		return nil, err
 	}
 
-	server := &Server{store: dataStore, nats: nc, js: js, logger: logger, mux: http.NewServeMux(), mode: mode}
+	server := &Server{store: dataStore, nats: nc, js: js, logger: logger, mux: http.NewServeMux(), mode: mode, authorityNodeID: authorityNodeID}
 	if err := server.subscribe(ctx); err != nil {
 		nc.Close()
 		return nil, err
@@ -94,7 +99,14 @@ func ensureStream(js nats.JetStreamContext) error {
 }
 
 func (s *Server) subscribe(ctx context.Context) error {
-	heartbeatSub, err := s.js.Subscribe("nc.v1.node.*.heartbeat", func(message *nats.Msg) {
+	heartbeatSubject := "nc.v1.node.*.heartbeat"
+	resultSubject := "nc.v1.node.*.result"
+	if s.mode == runtimeconfig.Live &&
+		(!topology.CanSubscribe(s.authorityNodeID, heartbeatSubject) ||
+			!topology.CanSubscribe(s.authorityNodeID, resultSubject)) {
+		return errors.New("controller subject subscriptions outside NC-M3B contract")
+	}
+	heartbeatSub, err := s.js.Subscribe(heartbeatSubject, func(message *nats.Msg) {
 		var heartbeat protocol.Heartbeat
 		if err := json.Unmarshal(message.Data, &heartbeat); err != nil {
 			s.logger.Error("invalid heartbeat", "error", err)
@@ -120,7 +132,7 @@ func (s *Server) subscribe(ctx context.Context) error {
 	}
 	_ = heartbeatSub
 
-	resultSub, err := s.js.Subscribe("nc.v1.node.*.result", func(message *nats.Msg) {
+	resultSub, err := s.js.Subscribe(resultSubject, func(message *nats.Msg) {
 		var result protocol.Result
 		if err := json.Unmarshal(message.Data, &result); err != nil {
 			s.logger.Error("invalid result", "error", err)
@@ -197,7 +209,7 @@ func (s *Server) plan(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, errors.New("idempotency_key must contain 8 to 128 characters"))
 		return
 	}
-	decision, err := policy.Evaluate(request.Target, request.Action)
+	decision, err := policy.EvaluateAs(s.authorityNodeID, request.Target, request.Action)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
@@ -242,6 +254,10 @@ func (s *Server) apply(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		message := nats.NewMsg("nc.v1.node." + operation.Target + ".command")
+		if s.mode == runtimeconfig.Live && !topology.CanPublish(s.authorityNodeID, message.Subject) {
+			writeError(w, http.StatusForbidden, errors.New("target is not an approved live agent"))
+			return
+		}
 		message.Header.Set(nats.MsgIdHdr, operation.ID)
 		message.Data = encoded
 		if _, err := s.js.PublishMsg(message); err != nil {

@@ -20,6 +20,7 @@
       "required": ["placement_profile", "operator", "age_recipients", "preconditions", "records"],
       "properties": {
         "placement_profile": {"const": "mac-authority"},
+        "control_path_manifest": {"const": "config/nc-m3b/control-path.yml"},
         "base_domain": {"type": "string", "minLength": 4, "maxLength": 253},
         "operator": {"const": "vahid"},
         "age_recipients": {

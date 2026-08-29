@@ -12,6 +12,7 @@ import (
 	"nodecontrol.local/node-control/internal/observation"
 	"nodecontrol.local/node-control/internal/protocol"
 	"nodecontrol.local/node-control/internal/runtimeconfig"
+	"nodecontrol.local/node-control/internal/topology"
 	"nodecontrol.local/node-control/internal/transportauth"
 )
 
@@ -26,6 +27,11 @@ type Agent struct {
 func New(nodeID, natsURL, credentialsFile string, mode runtimeconfig.Mode, logger *slog.Logger) (*Agent, error) {
 	if !protocol.IsCanonicalNode(nodeID) {
 		return nil, fmt.Errorf("invalid canonical node %q", nodeID)
+	}
+	if mode == runtimeconfig.Live {
+		if err := topology.RequireLiveAgent(nodeID); err != nil {
+			return nil, err
+		}
 	}
 	if err := transportauth.ValidateNATSURL(mode, nodeID, natsURL); err != nil {
 		return nil, err
@@ -59,6 +65,17 @@ func (a *Agent) Close() {
 
 func (a *Agent) Run(ctx context.Context) error {
 	commandSubject := "nc.v1.node." + a.nodeID + ".command"
+	heartbeatSubject := "nc.v1.node." + a.nodeID + ".heartbeat"
+	resultSubject := "nc.v1.node." + a.nodeID + ".result"
+	if a.mode == runtimeconfig.Live {
+		if !topology.CanSubscribe(a.nodeID, commandSubject) {
+			return fmt.Errorf("agent %s is not authorized to subscribe to %s", a.nodeID, commandSubject)
+		}
+		if !topology.CanPublish(a.nodeID, heartbeatSubject) ||
+			!topology.CanPublish(a.nodeID, resultSubject) {
+			return fmt.Errorf("agent %s is not authorized to publish its observation subjects", a.nodeID)
+		}
+	}
 	_, err := a.js.Subscribe(commandSubject, a.handleCommand,
 		nats.Durable("agent-"+a.nodeID),
 		nats.ManualAck(),
@@ -91,7 +108,7 @@ func (a *Agent) Run(ctx context.Context) error {
 				Facts: facts,
 			}
 			encoded, _ := json.Marshal(heartbeat)
-			if _, err := a.js.Publish("nc.v1.node."+a.nodeID+".heartbeat", encoded); err != nil {
+			if _, err := a.js.Publish(heartbeatSubject, encoded); err != nil {
 				a.logger.Error("publish heartbeat", "error", err)
 			}
 		}
@@ -125,7 +142,13 @@ func (a *Agent) handleCommand(message *nats.Msg) {
 		))
 	}
 	encoded, _ := json.Marshal(result)
-	if _, err := a.js.Publish("nc.v1.node."+a.nodeID+".result", encoded); err != nil {
+	resultSubject := "nc.v1.node." + a.nodeID + ".result"
+	if a.mode == runtimeconfig.Live && !topology.CanPublish(a.nodeID, resultSubject) {
+		a.logger.Error("result subject outside agent contract", "subject", resultSubject)
+		message.Term() //nolint:errcheck
+		return
+	}
+	if _, err := a.js.Publish(resultSubject, encoded); err != nil {
 		a.logger.Error("publish result", "error", err)
 		message.Nak() //nolint:errcheck
 		return

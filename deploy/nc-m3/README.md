@@ -5,6 +5,9 @@ preserved for reusable implementation, tests, rollback, listener, and
 credential-boundary material; it is not the current literal Nyvora topology.
 The approved topology makes `mac-node` authoritative, places PostgreSQL/NATS
 and compute on `asus-node`, and keeps public edge/relay/recovery on `vps-node`.
+This directory remains preserved legacy NC-M3 rendering material for later
+NC-M3E work; it is not the NC-M3B control-path implementation and must not be
+rendered or applied as the active topology.
 Use `../../docs/nyvora-roadmap-reconciliation-v2.md` for the current NC-M3A–NC-M3F
 sequence. No package content authorizes live APPLY.
 

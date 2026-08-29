@@ -81,6 +81,8 @@ Scope:
 - preserve deterministic controller policy on `mac-node`;
 - establish authenticated, scoped machine identities and agents on both
   `asus-node` and `vps-node`;
+- use the private NATS endpoint on `asus-node` as the broker for the three
+  logical node-to-node control paths, with no public ingress prerequisite;
 - keep public DNS, TLS, Caddy ingress, and authentik portal exposure outside
   this milestone.
 
@@ -92,6 +94,8 @@ Acceptance criteria:
   without becoming an independent source of policy truth;
 - authenticated/scoped agents on both `asus-node` and `vps-node` participate in
   private control, while `mac-node` remains the sole authority;
+- the private transport, machine identity binding, subject ACLs, and role
+  checks fail closed for unknown or incorrectly identified peers;
 - private authentication, authorization, reconnect, replay, and idempotency
   behavior are verified across all three nodes in the approved environment;
 - no public listener, DNS record, TLS certificate, or public dashboard is

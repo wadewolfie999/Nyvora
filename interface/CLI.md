@@ -57,6 +57,12 @@ Base path: `/api/v1alpha1`.
 Mutating requests require an idempotency key and expected resource revision.
 Unknown fields, targets, action types, and protocol versions fail closed.
 
+For NC-M3B the controller process is authority-bound and must declare
+`NODE_ID=mac-node`. Live agents are limited to `NODE_ID=asus-node` and
+`NODE_ID=vps-node`; these declarations are role checks, not substitutes for
+private transport authentication or NATS subject ACLs. The private control
+path does not require NC-M3E public DNS, TLS ingress, Caddy, or authentik.
+
 ## Portal boundary for NC-M3
 
 The Go/HTMX portal exposes OIDC login, node/service state, operation audit, and

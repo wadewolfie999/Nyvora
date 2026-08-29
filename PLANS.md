@@ -162,6 +162,38 @@ started. ASUS's private Radicle listener and Mac peer are active after the
 authorized restart, and Mac↔ASUS synchronization has been independently
 verified.
 
+### NC-M3B — Private Authenticated Three-Node Control Path (`partial; repository contract`)
+
+The repository contract is now explicit in
+`config/nc-m3b/control-path.yml`: `mac-node` is the sole authority and
+controller; `asus-node` hosts PostgreSQL and NATS plus a supporting agent; and
+`vps-node` participates as a private authenticated agent/relay/recovery member.
+The logical Mac↔ASUS, Mac↔VPS, and ASUS↔VPS paths are brokered through the
+private ASUS NATS endpoint. Go startup guards reject an ASUS/VPS controller and
+reject a Mac live agent; subject-direction tests encode the minimum ACL
+contract.
+
+Live bootstrap is not complete. Fresh preflight found no active PostgreSQL or
+NATS service on ASUS, no Node Control NATS credential/service references, no
+private NATS endpoint, and no verified private route for this bus. Creating or
+rotating machine identities/credentials, installing NATS ACLs, provisioning a
+private endpoint/route, or changing firewall/service state is outside this
+change and requires a separate exact APPLY envelope.
+
+Acceptance criteria:
+
+- all three distinct machine identities are owner-approved and bound to the
+  declared node roles;
+- private TLS/NKey/JWT connectivity is proven for all required logical paths;
+- NATS subject ACLs reject authority/command impersonation and cross-node
+  observation spoofing;
+- `mac-node` alone can create authority, change policy, enroll nodes, grant
+  capabilities, or authorize execution;
+- authentication and role mismatch fail closed, and one-node restart recovery
+  is proven without public ingress;
+- PostgreSQL remains runtime-state storage and NATS remains transport/replay;
+- no NC-M3C, NC-M3D, NC-M3E, or NC-M3F behavior is started.
+
 ## Batch 2 — Scoped application authorization
 
 - NC-M4 asus guardian and resource profiles.

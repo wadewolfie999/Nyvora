@@ -4,6 +4,7 @@ metadata:
   name: mac-authority
   approved: true
 spec:
+  control_path_manifest: config/nc-m3b/control-path.yml
   description: mac-node is the sole authoritative controller; asus-node hosts PostgreSQL, NATS, supporting services, compute, and an authenticated agent; vps-node is a private authenticated topology member with deferred public edge, relay, and recovery roles.
   fixed_services:
     mac-node:

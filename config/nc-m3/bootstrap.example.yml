@@ -4,6 +4,7 @@ metadata:
   name: primary
 spec:
   placement_profile: mac-authority
+  control_path_manifest: config/nc-m3b/control-path.yml
   # Public DNS/TLS/ingress are NC-M3E inputs and are intentionally absent here.
   operator: vahid
   age_recipients:

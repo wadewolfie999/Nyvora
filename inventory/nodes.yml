@@ -13,6 +13,7 @@ spec:
         - development
         - connectivity-probe
         - authoritative-controller
+      control_identity_ref: control.identity.mac-node
       account_mapping:
         vahid: vaheedgorgeen
       access:
@@ -39,6 +40,7 @@ spec:
         - authenticated-control-agent
         - relay
         - break-glass-rendezvous
+      control_identity_ref: control.identity.vps-node
       account_mapping:
         vahid: ubuntu
       access:
@@ -79,6 +81,7 @@ spec:
         - authenticated-control-agent
         - agent-execution
         - future-hep-execution
+      control_identity_ref: control.identity.asus-node
       account_mapping:
         vahid: wade
       access:
@@ -143,7 +146,8 @@ spec:
     node_control:
       direction: mac-authority-to-asus-and-vps-private-topology
       transport: authenticated-private-control
-      status: design-approved-implementation-pending
+      control_path_manifest: config/nc-m3b/control-path.yml
+      status: repository-contract-ready-live-bootstrap-blocked
     asus_tunnel:
       direction: asus-node-to-vps-node
       transport: frp-wss

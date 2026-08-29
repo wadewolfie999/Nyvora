@@ -39,6 +39,14 @@ milestone contracts in `../docs/nyvora-roadmap-reconciliation-v2.md`:
 Each milestone still requires its own node-scoped PLAN/APPLY/VERIFY/RECORD
 envelope. This runbook update does not authorize live changes.
 
+For NC-M3B, use the contract in `config/nc-m3b/control-path.yml`: the private
+NATS endpoint is brokered on `asus-node`, cross-node transport uses TLS with
+distinct scoped NKey/JWT credentials, and subject ACLs make the Mac controller
+the only command/authority publisher. ASUS and VPS may publish only their own
+observations/results and consume only their own command subjects. Missing or
+mismatched identity, credentials, role, endpoint, or server name fails closed.
+The existing WSS/frp/Caddy material remains deferred NC-M3E rendering material.
+
 Each stage has its own PLAN/APPLY/VERIFY/RECORD envelope. Do not continue when
 syntax, service readiness, client access, listener policy, or rollback differs
 from the plan.

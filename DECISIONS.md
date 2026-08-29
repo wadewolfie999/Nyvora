@@ -33,10 +33,12 @@ automatic database/control failover.
 
 ## D-006 — Transport and ingress
 
-Use NATS JetStream over WSS/443 with NKeys/JWT for control messaging. Use `frp`
-over WSS/443 for outbound asus application/control reachability. Caddy is the
-only public HTTP edge. Bootstrap-critical `frp` authentication uses a dedicated
-credential rather than authentik to avoid a circular dependency.
+Use NATS JetStream over WSS/443 with NKeys/JWT for the later public-edge path.
+NC-M3B private control transport is defined separately by D-017. Use `frp`
+over WSS/443 for outbound asus application/control reachability after the
+private foundation. Caddy is the only public HTTP edge. Bootstrap-critical
+`frp` authentication uses a dedicated credential rather than authentik to
+avoid a circular dependency.
 
 ## D-007 — Human identity and preview access
 
@@ -152,3 +154,24 @@ boundaries, and preservation work are retained as reusable candidate material.
 The old ASUS-authoritative placement conclusion and one-shot NC-M3 execution
 order are retained only as superseded historical context. This decision is a
 repository-only planning update and authorizes no live mutation.
+
+## D-017 — NC-M3B private brokered control path
+
+NC-M3B uses a private authenticated NATS endpoint on `asus-node` as the
+control transport for the three logical node-to-node paths. `mac-node` is the
+only process role allowed to publish control commands or authority subjects;
+the `asus-node` and `vps-node` agents publish only their own observations and
+results and consume only their own command subjects. The broker carries
+bounded commands/events and replay but cannot create policy authority.
+
+Cross-node transport requires private routing, TLS, server-name verification,
+and one distinct scoped NATS NKey/JWT credential bound to each declared node
+identity. Missing credentials, unknown identities, role mismatch, or a
+non-private endpoint fail closed. The contract is repository-only until the
+owner-approved machine credentials, NATS ACLs, ASUS endpoint, private route,
+and restart/recovery evidence exist. Public Caddy/frp/WSS/443 ingress remains
+NC-M3E and is not a prerequisite.
+
+This decision does not implement rootless execution, capability/lease,
+delegation/revocation, controller-loss reconciliation, public ingress, or
+application semantics.

@@ -1,6 +1,10 @@
 package policy
 
-import "testing"
+import (
+	"testing"
+
+	"nodecontrol.local/node-control/internal/topology"
+)
 
 func TestEvaluate(t *testing.T) {
 	tests := []struct {
@@ -18,7 +22,7 @@ func TestEvaluate(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			decision, err := Evaluate(test.target, test.action)
+			decision, err := EvaluateAs(topology.AuthorityNode, test.target, test.action)
 			if (err != nil) != test.wantErr {
 				t.Fatalf("Evaluate() error = %v, wantErr %v", err, test.wantErr)
 			}
@@ -26,5 +30,14 @@ func TestEvaluate(t *testing.T) {
 				t.Fatalf("unexpected decision: %#v", decision)
 			}
 		})
+	}
+}
+
+func TestNonAuthorityCannotEvaluateControlPolicy(t *testing.T) {
+	if _, err := EvaluateAs("asus-node", "vps-node", "observe"); err == nil {
+		t.Fatal("supporting node was accepted as policy authority")
+	}
+	if _, err := EvaluateAs("vps-node", "asus-node", "observe"); err == nil {
+		t.Fatal("relay node was accepted as policy authority")
 	}
 }

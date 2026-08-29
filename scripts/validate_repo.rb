@@ -18,13 +18,16 @@ required = %w[
   runbooks/collect-nc-m3-preflight.md scripts/collect_nc_m3_preflight.rb
   scripts/test_collect_nc_m3_preflight.rb
   config/nc-m3/capacity.yml
+  config/nc-m3b/control-path.yml
   config/placement-profiles/mac-authority.yml
   config/placement-profiles/vps-core.yml
   config/placement-profiles/split-edge.yml
   schemas/node-inventory.schema.json
   schemas/placement-profile.schema.json
   schemas/nc-m3-bootstrap.schema.json
+  schemas/nc-m3b-control-path.schema.json
   schemas/operation.schema.json schemas/agent-task.schema.json
+  records/NC-M3B-HANDOFF-2026-08-29.md
 ]
 required.each do |relative|
   fail_check("missing #{relative}") unless File.file?(File.join(ROOT, relative))
@@ -55,6 +58,38 @@ fail_check("vps-node is not recorded as authenticated private topology member") 
   nodes.dig("vps-node", "roles").include?("private-topology-member") &&
   nodes.dig("vps-node", "roles").include?("authenticated-control-agent")
 
+control_path = YAML.safe_load(File.read(File.join(ROOT, "config/nc-m3b/control-path.yml")), aliases: false)
+fail_check("NC-M3B control path kind drifted") unless control_path["kind"] == "NC-M3BControlPath"
+fail_check("NC-M3B authority is not mac-node") unless control_path.dig("spec", "authority", "node") == "mac-node"
+fail_check("NC-M3B authority role drifted") unless control_path.dig("spec", "authority", "role") == "authoritative-controller"
+fail_check("NC-M3B node set drifted") unless control_path.dig("spec", "nodes")&.keys&.sort == expected_nodes
+fail_check("NC-M3B transport is not brokered through asus-node") unless
+  control_path.dig("spec", "transport", "model") == "brokered-private" &&
+  control_path.dig("spec", "transport", "broker_node") == "asus-node"
+fail_check("NC-M3B transport is not private TLS") unless
+  control_path.dig("spec", "transport", "private_only") == true &&
+  control_path.dig("spec", "transport", "encryption") == "tls" &&
+  control_path.dig("spec", "transport", "public_ingress_required") == false
+fail_check("NC-M3B paths are not all present") unless
+  control_path.dig("spec", "transport", "paths")&.keys&.sort == %w[asus-to-vps mac-to-asus mac-to-vps]
+authority_capabilities = control_path.dig("spec", "authority", "capabilities") || {}
+%w[create_authority change_policy enroll_nodes grant_capabilities authorize_execution].each do |capability|
+  fail_check("Mac authority capability #{capability} is not true") unless authority_capabilities[capability] == true
+end
+control_path.dig("spec", "nodes").each do |node_id, node|
+  if node_id == "mac-node"
+    fail_check("Mac control identity reference is missing") unless node["identity_ref"] == "control.identity.mac-node"
+  else
+    %w[can_create_authority can_change_policy can_enroll_nodes can_grant_capabilities can_authorize_execution].each do |capability|
+      fail_check("#{node_id} has authority capability #{capability}") if node[capability] == true
+    end
+  end
+end
+fail_check("NC-M3B authentication is not scoped NATS NKey/JWT over TLS") unless
+  control_path.dig("spec", "authentication", "mechanism") == "nats-nkey-jwt-over-tls"
+fail_check("NC-M3B rotation boundary is not owner-controlled") unless
+  control_path.dig("spec", "rotation_boundary", "owner_controlled") == true
+
 profiles = Dir.glob(File.join(ROOT, "config/placement-profiles/*.yml")).sort.map do |path|
   YAML.safe_load(File.read(path), aliases: false)
 end
@@ -65,6 +100,8 @@ approved = profiles.find { |profile| profile.dig("metadata", "name") == "mac-aut
 fail_check("approved mac-authority profile is not marked approved") unless approved.dig("metadata", "approved") == true
 fail_check("approved mac-authority profile is marked historical") if approved.dig("metadata", "historical") == true
 fail_check("approved profile does not place controller on mac-node") unless approved.dig("spec", "fixed_services", "mac-node").include?("controller")
+fail_check("approved profile does not reference NC-M3B control path") unless
+  approved.dig("spec", "control_path_manifest") == "config/nc-m3b/control-path.yml"
 fail_check("approved profile does not place PostgreSQL on asus-node") unless approved.dig("spec", "fixed_services", "asus-node").include?("postgres")
 fail_check("approved profile does not place NATS on asus-node") unless approved.dig("spec", "fixed_services", "asus-node").include?("nats")
 fail_check("approved profile does not include vps-node agent") unless approved.dig("spec", "fixed_services", "vps-node").include?("node-agent")

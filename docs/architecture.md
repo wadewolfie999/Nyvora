@@ -5,7 +5,7 @@
 ```text
 Vahid
   -> mac-node authoritative controller / Go+HTMX portal
-  -> vps-node Caddy (only public HTTP edge)
+  -> vps-node Caddy (NC-M3E deferred public HTTP edge)
   -> asus-node PostgreSQL + NATS + rootless compute
   -> controller and deterministic policy on mac-node
   -> NATS JetStream commands/events
@@ -13,7 +13,7 @@ Vahid
   -> rootless Podman workloads on asus-node
 
 LangGraph -> controller API only
-asus-node -> outbound frp/WSS -> vps-node edge
+asus-node -> outbound frp/WSS -> vps-node edge (NC-M3E deferred)
 ```
 
 ### Node boundaries
@@ -79,7 +79,7 @@ placement profile and does not claim that either live topology is deployed.
 
 - Runtime mode defaults to `live`; only the NC-M2 runner selects `tracer`.
 - Live NATS clients require a distinct absolute `.creds` file. Mac and VPS
-  agents reject transports other than WSS; asus may use authenticated NATS on
+  agents reject transports other than TLS or WSS; asus may use authenticated NATS on
   its private rootless network.
 - PostgreSQL URLs reject inline passwords. Live controller access requires a
   mode-0600 passfile path.
@@ -92,6 +92,29 @@ placement profile and does not claim that either live topology is deployed.
 
 This is locally tested deployment-capable behavior, not evidence that
 authentik, Caddy, NATS credentials, or any live agent has been provisioned.
+
+## NC-M3B private control path
+
+NC-M3B uses a brokered private control path: the authoritative `mac-node`
+controller and the authenticated agents on `asus-node` and `vps-node` connect
+to the private NATS endpoint hosted on `asus-node`. The three logical pairwise
+paths are therefore `mac-node`-to-`asus-node`, `mac-node`-to-`vps-node`, and
+`asus-node`-to-`vps-node` through the authenticated ASUS broker; direct public
+peer sockets are not required.
+
+Each node has one distinct, owner-controlled machine identity and scoped NATS
+credential. TLS, private routing, server-name verification, and NATS
+NKey/JWT authentication are required for cross-node connections. Subject ACLs
+allow only the Mac controller to publish commands or authority subjects; each
+supporting node may publish only its own heartbeat/result subjects and consume
+only its own command subject. NATS is transport/replay, not policy truth.
+
+The controller process must declare `NODE_ID=mac-node`; a live agent must
+declare `NODE_ID=asus-node` or `NODE_ID=vps-node`. Unknown, mismatched, or
+missing identity/role declarations fail closed. The repository contract is
+`config/nc-m3b/control-path.yml`; credential issuance, ACL installation,
+private endpoint provisioning, and live restart/recovery evidence remain
+implementation prerequisites and are not represented as completed here.
 
 ## Identity and trust
 
@@ -108,10 +131,14 @@ authentik, Caddy, NATS credentials, or any live agent has been provisioned.
 
 ## Connectivity and ports
 
-All routine node control connections are outbound WSS over port 443. The only
-NC-M3 public hosts are `control`, `auth`, `bus`, and `tunnel` beneath one exact
-bootstrap-supplied, Vahid-controlled base domain. Caddy routes by host;
-internal services bind loopback or rootless private networks.
+During NC-M3B, routine control connections use the private authenticated NATS
+endpoint on `asus-node`; no public listener, DNS record, Caddy route, `frp`
+route, or public TLS ingress is required. The outbound WSS/443 topology below
+is the later NC-M3E edge path, not the NC-M3B bootstrap path. When NC-M3E is
+authorized, the only public Node Control hosts are `control`, `auth`, `bus`,
+and `tunnel` beneath one exact bootstrap-supplied, Vahid-controlled base
+domain. Caddy routes by host; internal services bind loopback or rootless
+private networks.
 
 NC-M3 extends the existing package-owned VPS `caddy.service`; it does not run a
 second Caddy service. A combined root imports the protected Tracker Caddyfile
