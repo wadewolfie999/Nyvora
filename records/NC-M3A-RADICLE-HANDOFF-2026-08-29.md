@@ -146,7 +146,7 @@ Additional UTC evidence timestamp: 2026-08-29T04:41:09Z.
 
 ## Final NC-M3A completion pass
 
-Final UTC evidence timestamp: 2026-08-29T04:49:49Z.
+Final UTC evidence timestamp: 2026-08-29T04:57:07Z.
 
 - Repository HEAD at this evidence capture is
   `650e80e4decec4d78b06dfba461633bf693a4e1d` on
@@ -158,14 +158,14 @@ Final UTC evidence timestamp: 2026-08-29T04:49:49Z.
 - The existing open patch remains unmerged. Its latest verified head at this
   evidence capture is `650e80e4decec4d78b06dfba461633bf693a4e1d`, with Radicle
   revision `68a16d169772e83338a87fff5d41bd02446776c1`.
-- ASUS restart status: not performed. Radicle 1.10.1 has no `node restart`
-  command; activation requires stopping the running process and starting it
-  with the owner-held identity passphrase. The process was left running to
-  preserve the already-proven live outbound replication. The on-disk listener
-  configuration and rollback snapshot remain unchanged and verified.
-- NC-M3A disposition: repository and live replication are complete; the
-  persistent ASUS inbound-listener activation is pending secure owner-assisted
-  restart. NC-M3B implementation has not started.
+- ASUS restart status: completed by the owner using the installed Radicle
+  1.10.1 CLI. Fresh verification shows process PID `1941` listening only on
+  `192.168.1.50:8776`, connected to the Mac NID, with the exact RID still
+  seeded using `allow`/`followed` policy. The rollback snapshot remains
+  unchanged and verified.
+- NC-M3A disposition: COMPLETE. Repository topology enforcement, private
+  Radicle workflow, ASUS inbound activation, and Mac↔ASUS replication are
+  complete. NC-M3B implementation has not started.
 - Focused commits in this completion pass are `2682c3f` (topology
   enforcement), `d829ea2` (completion boundary), and `650e80e` (final
   handoff). All are published on the existing open patch.

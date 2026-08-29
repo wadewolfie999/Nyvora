@@ -135,7 +135,7 @@ It remains a prerequisite for public operations and the corresponding
 acceptance claims. This repository-only update does not refresh dated node or
 DNS evidence and does not authorize APPLY.
 
-### NC-M3A — Authority and Placement Re-baseline (`partially complete; ASUS restart pending`)
+### NC-M3A — Authority and Placement Re-baseline (`complete; repository, workflow, and replication`)
 
 The approved active placement is `mac-authority`: `mac-node` is the sole
 authoritative controller; `asus-node` owns PostgreSQL, NATS, supporting
@@ -150,7 +150,7 @@ previously authorized transitions and record execution facts, but may not
 create new authority, policy, enrollment, capability grants, or execution
 authorization.
 
-Repository and live-replication evidence: `mac-node` is the sole active controller and authority;
+Exit evidence: `mac-node` is the sole active controller and authority;
 `asus-node` is the PostgreSQL/NATS/supporting-services/compute host and an
 authenticated private-topology member; `vps-node` is an authenticated private-
 topology member with public-edge duties deferred to NC-M3E; legacy profiles are
@@ -158,9 +158,9 @@ retained as historical and rejected for active selection; the authority outage
 invariant is recorded; and the existing Nyvora Radicle patch plus ASUS replica
 are independently verified in
 `records/NC-M3A-RADICLE-HANDOFF-2026-08-29.md`. NC-M3B implementation has not
-started. The ASUS Radicle process still needs a secure stop/start cycle to
-activate its staged private inbound listener; that cycle is pending because it
-requires the owner-held Radicle passphrase. No interruption was attempted.
+started. ASUS's private Radicle listener and Mac peer are active after the
+authorized restart, and Mac↔ASUS synchronization has been independently
+verified.
 
 ## Batch 2 — Scoped application authorization
 
