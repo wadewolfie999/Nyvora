@@ -10,11 +10,13 @@ performed.
 
 ## Evidence timestamp and repository
 
-- UTC evidence timestamp: 2026-08-29T12:04:15Z
+- UTC evidence timestamp: 2026-08-29T12:10:00Z
 - Git root: `/Users/vaheedgorgeen/libs/Nyvora`
 - Branch: `codex/nc-m3a-radicle-workflow`
 - Base branch: `main`
 - Preflight HEAD: `575ac2629aa67cf18f11064ef46b723c30c1a705`
+- NC-M3B repository HEAD: `ab6702ce67505835479cab625138bab1def1639d`
+- NC-M3B commit: `ab6702c` (`Start NC-M3B private control path contract`)
 - Canonical `main`: `be9192ecccce4f5cb21275fb913298409a203bd6`
 - Worktree before NC-M3B changes: clean
 
@@ -154,9 +156,10 @@ is not a blocker once the private path exists.
 
 - RID: `rad:z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`
 - Existing NC-M3A patch remains open and unmerged.
-- Radicle patch publication/synchronization is intentionally deferred until
-  the focused repository changes are validated and committed. No merge into
-  `main` is intended.
+- The focused NC-M3B commit is local on
+  `codex/nc-m3a-radicle-workflow` and is one commit ahead of the existing
+  patch ref; updating that existing patch and synchronizing to ASUS remains a
+  separate non-force handoff operation. No merge into `main` is intended.
 
 ## Rollback
 
