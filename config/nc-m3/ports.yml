@@ -2,7 +2,7 @@ api_version: nodecontrol.io/v1alpha1
 kind: PortAllocation
 metadata:
   name: split-edge-nc-m3
-  observed_free_at: "2026-08-21T16:06:59Z"
+  evidence_epoch: "2026-08-23T20:42:34Z"
 spec:
   vps-node:
     public_tcp:
@@ -13,6 +13,11 @@ spec:
       caddy_admin: 2019
       frps_transport: 17000
       frps_vhost_http: 17080
+    expected_owned_tcp:
+      caddy_admin:
+        port: 2019
+        service: caddy.service
+        health: caddy_admin_http_2xx
     protected_existing_tcp:
       reverse_ssh_rendezvous: 2222
   asus-node:
@@ -32,6 +37,7 @@ spec:
     loopback_tcp: {}
   rules:
     - caddy_is_the_only_public_http_edge
+    - caddy_admin_is_an_expected_owned_listener_not_a_free_candidate
     - frps_transport_and_vhost_bind_loopback_only
     - asus_control_services_bind_loopback_or_rootless_network_only
     - protected_existing_ports_are_never_reallocated

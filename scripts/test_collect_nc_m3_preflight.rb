@@ -38,6 +38,9 @@ class NCM3PreflightTest < Minitest::Test
       assert_includes asus_categories, category
     end
     assert_includes asus_categories, "port_owner"
+    caddy_probe = catalog.linux("vps-node").find { |probe| probe.id == "caddy_runtime" }
+    assert_includes caddy_probe.command, "http://127.0.0.1:2019/config/"
+    refute_includes caddy_probe.command, '#{@caddy_admin_port}'
 
     dangerous = Preflight::Probe.new(
       id: "bad", category: "bad", description: "bad", command: "systemctl restart ssh"
@@ -116,6 +119,91 @@ class NCM3PreflightTest < Minitest::Test
     assert readiness.fetch("results").all? { |item| item.fetch("classification") == "inferred" }
   end
 
+  def test_caddy_admin_listener_is_expected_when_service_and_admin_are_healthy
+    readiness = evaluate_readiness(
+      vps_sockets: "tcp LISTEN 0 4096 127.0.0.1:2019 0.0.0.0:*\n",
+      vps_services: "system.caddy.service.active=active\n",
+      caddy_runtime: caddy_runtime(version: "2.6.2")
+    )
+    result = readiness.fetch("results").find { |item| item["id"] == "vps-node.port.2019" }
+    assert_equal "satisfied", result.fetch("status")
+    assert_equal "expected_listener", result.fetch("port_disposition")
+  end
+
+  def test_caddy_admin_listener_blocks_when_ownership_is_not_verified
+    readiness = evaluate_readiness(
+      vps_sockets: "tcp LISTEN 0 4096 127.0.0.1:2019 0.0.0.0:*\n",
+      vps_services: "system.caddy.service.active=inactive\n",
+      caddy_runtime: caddy_runtime(active: "inactive", main_pid: "0", admin: "200")
+    )
+    result = readiness.fetch("results").find { |item| item["id"] == "vps-node.port.2019" }
+    assert_equal "blocked", result.fetch("status")
+    assert_equal "collision", result.fetch("port_disposition")
+    assert_includes readiness.fetch("blockers"), "vps-node TCP/2019 is listening without verified active Caddy ownership and admin health"
+  end
+
+  def test_caddy_version_drift_is_explicit_warning_not_a_collision
+    readiness = evaluate_readiness(
+      vps_sockets: "tcp LISTEN 0 4096 127.0.0.1:2019 0.0.0.0:*\n",
+      vps_services: "system.caddy.service.active=active\n",
+      caddy_runtime: caddy_runtime(version: "2.6.2")
+    )
+    result = readiness.fetch("results").find { |item| item["id"] == "vps-node.caddy.version" }
+    assert_equal "warning", result.fetch("status")
+    assert_includes result.fetch("detail"), "2.6.2"
+    assert_includes result.fetch("detail"), "2.11.4"
+  end
+
+  def test_preservation_failures_block_readiness
+    readiness = evaluate_readiness(
+      vps_sockets: "tcp LISTEN 0 4096 127.0.0.1:2019 0.0.0.0:*\n",
+      vps_services: "system.caddy.service.active=inactive\n",
+      caddy_runtime: caddy_runtime(active: "inactive", main_pid: "0", admin: "000"),
+      asus_services: <<~TEXT,
+        user.tracker.service.active=inactive
+        health.tracker.http=000
+        system.docker.service.active=inactive
+        health.jellyfin.http=000
+        system.asus-reverse-tunnel.service.active=inactive
+        system.reverse-ssh.service.load=not-found
+      TEXT
+      asus_sockets: ""
+    )
+    expected = [
+      "VPS Caddy service is not observed active",
+      "Tracker user service is not observed active",
+      "Docker service is not observed active",
+      "Jellyfin TCP/8096 listener is absent",
+      "asus reverse-tunnel service is not observed active",
+      "legacy reverse-ssh service is not present"
+    ]
+    expected.each { |blocker| assert_includes readiness.fetch("blockers"), blocker }
+  end
+
+  def test_asus_capacity_admission_uses_repository_thresholds
+    readiness = evaluate_readiness(
+      asus_memory: "Mem: 8205926400 800000000 0 0 0 6442450944\nSwap: 4294967296 0 3758096384\n",
+      asus_disk: "/dev/mapper/root 61075263488 20000000000 21474836480 50% /\n"
+    )
+    %w[memory_available_bytes swap_free_bytes root_free_bytes].each do |name|
+      result = readiness.fetch("results").find { |item| item["id"] == "asus-node.capacity.#{name}" }
+      assert_equal "satisfied", result.fetch("status")
+    end
+  end
+
+  def test_asus_package_candidate_drift_blocks_before_install
+    readiness = evaluate_readiness(
+      asus_runtime: <<~TEXT
+        package.podman.candidate=9.9.9-drift
+        package.uidmap.candidate=1:4.13+dfsg1-4ubuntu3.2
+        package.fuse-overlayfs.candidate=1.13-1
+        package.slirp4netns.candidate=1.2.1-1build2
+      TEXT
+    )
+    blocker = "asus-node package podman candidate 9.9.9-drift differs from lock 4.9.3+ds1-1ubuntu0.2"
+    assert_includes readiness.fetch("blockers"), blocker
+  end
+
   def test_remote_probe_parser_classifies_failures_and_redacts_output
     inputs = Preflight::RepositoryInputs.new(ROOT)
     collector = Preflight::Collector.new(inputs: inputs, runner: FailingRunner.new)
@@ -158,6 +246,9 @@ class NCM3PreflightTest < Minitest::Test
       manifest = File.read(File.join(destination, "MANIFEST.sha256"))
       assert_includes manifest, "evidence.json"
       assert_includes manifest, "REPORT.md"
+      report = File.read(File.join(destination, "REPORT.md"))
+      assert_includes report, "## Port disposition"
+      assert_includes report, "`free_candidate`"
     end
   end
 
@@ -188,6 +279,50 @@ class NCM3PreflightTest < Minitest::Test
     end
   end
 
+  def evaluate_readiness(
+    vps_sockets: "", vps_services: "", caddy_runtime: "", asus_services: "",
+    asus_sockets: "", asus_memory: "", asus_disk: "", asus_runtime: ""
+  )
+    nodes = %w[mac-node vps-node asus-node].each_with_object({}) do |node_id, result|
+      result[node_id] = {"access" => {"selected_path" => nil}, "probes" => []}
+    end
+    nodes["vps-node"]["probes"] = [
+      observed_probe("sockets", vps_sockets),
+      observed_probe("services", vps_services),
+      observed_probe("caddy_runtime", caddy_runtime)
+    ]
+    nodes["asus-node"]["probes"] = [
+      observed_probe("sockets", asus_sockets),
+      observed_probe("services", asus_services),
+      observed_probe("memory_swap", asus_memory),
+      observed_probe("disk", asus_disk),
+      observed_probe("runtime", asus_runtime),
+      observed_probe("port_42665", asus_sockets)
+    ]
+    Preflight::Readiness.new(Preflight::RepositoryInputs.new(ROOT), {"nodes" => nodes}).evaluate
+  end
+
+  def observed_probe(id, output)
+    {
+      "id" => id,
+      "classification" => "observed",
+      "status" => "succeeded",
+      "output" => output,
+      "category" => "fixture",
+      "description" => "fixture"
+    }
+  end
+
+  def caddy_runtime(active: "active", main_pid: "123", admin: "200", version: "2.11.4")
+    <<~TEXT
+      service.active=#{active}
+      service.main_pid=#{main_pid}
+      admin.http=#{admin}
+      binary.version=#{version}
+      package.version=2.6.2-14
+    TEXT
+  end
+
   def sample_evidence
     nodes = %w[mac-node vps-node asus-node].each_with_object({}) do |node_id, result|
       result[node_id] = {
@@ -202,7 +337,19 @@ class NCM3PreflightTest < Minitest::Test
       "metadata" => {"collected_at" => "2026-08-23T00:00:00Z"},
       "nodes" => nodes,
       "user_confirmations" => [],
-      "readiness" => {"status" => "BLOCKED", "blockers" => ["fixture blocker"], "warnings" => []}
+      "readiness" => {
+        "status" => "BLOCKED",
+        "blockers" => ["fixture blocker"],
+        "warnings" => [],
+        "results" => [{
+          "id" => "vps-node.port.17000",
+          "classification" => "inferred",
+          "status" => "satisfied",
+          "detail" => "fixture port is free",
+          "evidence_refs" => ["vps-node.sockets"],
+          "port_disposition" => "free_candidate"
+        }]
+      }
     }
   end
 end

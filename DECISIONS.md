@@ -22,11 +22,14 @@ Use a Go modular control core and a separate Python/LangGraph workflow adapter.
 LangGraph can propose and sequence operations but cannot directly administer a
 node or bypass deterministic policy.
 
-## D-005 — Placement profiles
+## D-005 — Placement profiles (historical candidate profiles)
 
-Support only `vps-core` and `split-edge` in v1. Discovery selects one; there is
-no automatic database/control failover. VPS always retains the public edge and
-break-glass path.
+The repository retains `vps-core` and `split-edge` as tested historical
+candidate profiles for NC-M0–NC-M2 and reusable NC-M3 implementation evidence.
+The approved Nyvora topology supersedes their literal placement conclusion:
+`mac-node` is authoritative, `asus-node` hosts PostgreSQL/NATS and compute, and
+`vps-node` retains the public edge, relay, and break-glass path. There is no
+automatic database/control failover.
 
 ## D-006 — Transport and ingress
 
@@ -92,3 +95,60 @@ transport are absent. Only the NC-M2 runner may explicitly select `tracer`,
 which permits its disposable PostgreSQL trust and unauthenticated internal
 NATS network. Simulated observations are labelled and cannot be represented as
 live host evidence.
+
+## D-014 — Preserve and extend the existing VPS Caddy service
+
+NC-M3 reuses the active package-owned `caddy.service`; it never installs or
+enables a competing Caddy unit. The pinned Node Control binary is installed
+side-by-side, a combined root imports the protected `/etc/caddy/Caddyfile`
+before an independently removable Node Control fragment, and a systemd drop-in
+changes the existing unit only after complete offline validation. TCP/2019 is
+an expected listener only when the active unit, nonzero main PID, and Caddy
+admin endpoint agree. Rollback removes the drop-in and restores the package
+binary/configuration path without rewriting the protected Caddyfile.
+
+Running a second edge service was rejected because both services would contend
+for TCP/443 and could interrupt the existing Tracker gateway. Replacing the
+existing Caddyfile was rejected because it would merge ownership and weaken
+rollback.
+
+## D-015 — NC-M3 ASUS admission and DNS hard gate
+
+The six rendered NC-M3 containers retain their 4,992 MiB aggregate memory
+limits. Before first core start, fresh evidence must show at least 6 GiB
+available RAM, 3.5 GiB free swap, and 20 GiB free root storage, plus Vahid's
+explicit confirmation that no critical simulation is active. Existing work is
+never stopped to manufacture capacity. Broader continuous load management
+remains NC-M4.
+
+No live NC-M3 APPLY begins without one exact Vahid-controlled base domain and
+verified control of the four derived hosts: `control`, `auth`, `bus`, and
+`tunnel`. IP-only, self-signed, or uncontrolled wildcard substitutes are not
+accepted.
+
+## D-016 — Approved Nyvora authority and NC-M3 decomposition
+
+The approved Nyvora model makes `mac-node` the sole authoritative controller;
+`asus-node` hosts supporting services and compute, including PostgreSQL and
+NATS; and `vps-node` hosts the public edge, relay, and recovery rendezvous.
+Service placement does not transfer policy authority. PostgreSQL remains the
+runtime-state owner, NATS remains bounded transport/replay, and only the Mac
+controller can authorize control operations.
+
+During `mac-node` outage, workers and supporting services may complete
+previously authorized transitions and record execution facts, but may not
+create new authority, policy, enrollment, capability grants, or execution
+authorization.
+
+The bundled NC-M3 plan is superseded and decomposed into NC-M3A authority and
+placement re-baseline, NC-M3B private controller/supporting-service bootstrap,
+NC-M3C rootless compute and agent execution, NC-M3D delegated continuity and
+reconciliation, NC-M3E public edge/DNS/TLS/ingress/authentik, and NC-M3F
+Foundation acceptance and closeout. NC-M3E is intentionally not a prerequisite
+for private NC-M3B–NC-M3D bootstrap.
+
+Existing NC-M0–NC-M2 evidence and useful NC-M3 implementation, tests, safety
+boundaries, and preservation work are retained as reusable candidate material.
+The old ASUS-authoritative placement conclusion and one-shot NC-M3 execution
+order are retained only as superseded historical context. This decision is a
+repository-only planning update and authorizes no live mutation.

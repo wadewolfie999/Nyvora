@@ -18,8 +18,20 @@ end
 raise "profile must assign one complete control core" unless core_matches.length == 1
 
 expected_core = core_matches.keys.first
-controller = URI("http://127.0.0.1:18080")
-workflow = URI("http://127.0.0.1:18081")
+
+def tracer_port(name, default)
+  port = Integer(ENV.fetch(name, default), 10)
+  raise "invalid tracer loopback port: #{port}" unless port.between?(1024, 65_535)
+
+  port
+end
+
+controller_port = tracer_port("NC_TRACER_CONTROLLER_PORT", "18080")
+workflow_port = tracer_port("NC_TRACER_WORKFLOW_PORT", "18081")
+raise "tracer controller and workflow ports must differ" if controller_port == workflow_port
+
+controller = URI("http://127.0.0.1:#{controller_port}")
+workflow = URI("http://127.0.0.1:#{workflow_port}")
 
 def request_json(base, method, path, payload = nil)
   uri = base + path

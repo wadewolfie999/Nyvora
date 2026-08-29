@@ -13,6 +13,23 @@ spec:
       version: 0.71.0
       source: https://github.com/fatedier/frp/releases/download/v0.71.0/frp_0.71.0_linux_amd64.tar.gz
       sha256: 84f27e39f11169f7adcef8e8b70c9329de17747b1f14dad9fb95eef5682ea716
+    age_darwin_arm64:
+      version: 1.3.1
+      source: https://github.com/FiloSottile/age/releases/download/v1.3.1/age-v1.3.1-darwin-arm64.tar.gz
+      sha256: 01120ea2cbf0463d4c6bd767f99f3271bbed1cdc8a9aa718a76ba1fe4f01998b
+    sops_darwin_arm64:
+      version: 3.13.3
+      source: https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.darwin
+      sha256: ada49efb072e8d02434b15cdd4746561b7b37e82813ce11efe5cb311439f288b
+    nsc_darwin_arm64:
+      version: 2.14.0
+      source: https://github.com/nats-io/nsc/releases/download/v2.14.0/nsc-darwin-arm64.zip
+      sha256: f8a6c2c5a0e9f86d4fd54e4955d4f61dd9bf3824f4b9c1b5623337b449b9baf2
+  asus_packages:
+    podman: 4.9.3+ds1-1ubuntu0.2
+    uidmap: 1:4.13+dfsg1-4ubuntu3.2
+    fuse-overlayfs: 1.13-1
+    slirp4netns: 1.2.1-1build2
   external_images:
     postgres:
       candidate: docker.io/library/postgres:16-alpine
@@ -36,4 +53,7 @@ spec:
       build_context: .
       containerfile: workflow/Containerfile
       digest: unresolved-live-amd64-build
-  deployment_rule: every_image_requires_verified_sha256_digest_before_render_or_pull
+  deployment_rules:
+    - every_image_requires_verified_sha256_digest_before_render_or_pull
+    - every_native_artifact_requires_verified_sha256_before_install
+    - asus_package_candidate_must_equal_lock_before_install
