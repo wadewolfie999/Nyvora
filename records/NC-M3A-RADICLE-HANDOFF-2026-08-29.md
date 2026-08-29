@@ -106,12 +106,14 @@ Additional UTC evidence timestamp: 2026-08-29T04:41:09Z.
 - ASUS storage: the exact RID is present at
   `/home/wade/.radicle/storage/z2SjXpsWTUbAtXi2EfUxrmMXD9bxR`.
   `refs/heads/main` is `be9192ecccce4f5cb21275fb913298409a203bd6`;
-  Mac-namespaced feature and patch refs include branch head
-  `4177b4d308c7d252eb2db091f6c6539fb7c4bf8b`; `refs/rad/id` is
-  `0d6e3a9a152dc970fc8c217f98f8305a40d94f41`; `git fsck --full` passed.
+  the Mac-namespaced feature ref remains at its earlier published head
+  `dffbc986fcf181951f7893995599c932504c9838`, while the current
+  Mac-namespaced patch ref is at `bd4df7649786916c01cc633a14fc7ed1069c2aa3`;
+  `refs/rad/id` is `0d6e3a9a152dc970fc8c217f98f8305a40d94f41`; `git fsck --full`
+  passed.
 - Patch: `e917ae6caac006afe7aafdd7c9a03324ee23b555`, open, base
   `be9192ecccce4f5cb21275fb913298409a203bd6`, head
-  `4177b4d308c7d252eb2db091f6c6539fb7c4bf8b`; `rad patch show` on ASUS
+  `bd4df7649786916c01cc633a14fc7ed1069c2aa3`; `rad patch show` on ASUS
   reports the expected six-commit range.
 - Live synchronization: ASUS fetched the project from the Mac NID; Mac-side
   inventory then returned the exact RID for ASUS. A Mac-side `rad sync` pinned
@@ -156,6 +158,6 @@ Additional UTC evidence timestamp: 2026-08-29T04:41:09Z.
 
 ## Recommended next review action
 
-Review patch `e917ae6caac006afe7aafdd7c9a03324ee23b555` at head `4177b4d` on
+Review patch `e917ae6caac006afe7aafdd7c9a03324ee23b555` at head `bd4df76` on
 `codex/nc-m3a-radicle-workflow`. Do not merge into `main` until explicit
 architectural and review acceptance is recorded.
