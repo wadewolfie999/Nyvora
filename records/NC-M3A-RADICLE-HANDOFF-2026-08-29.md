@@ -166,6 +166,10 @@ Final UTC evidence timestamp: 2026-08-29T04:49:49Z.
 - NC-M3A disposition: repository and live replication are complete; the
   persistent ASUS inbound-listener activation is pending secure owner-assisted
   restart. NC-M3B implementation has not started.
+- Publication completion: the final repository HEAD
+  `d829ea2e26ecf7226a44fc64e8ef32b1cb2bf617` is published on the existing
+  patch. Radicle reports patch revision
+  `75cf243ccaa600a0f8aa335b64233a8229ed85d4` with patch head `d829ea2`.
 
 ## Open and deferred work
 
