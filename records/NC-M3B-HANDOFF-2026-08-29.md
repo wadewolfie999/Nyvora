@@ -10,7 +10,7 @@ performed.
 
 ## Evidence timestamp and repository
 
-- UTC evidence timestamp: 2026-08-29T12:11:56Z
+- UTC evidence timestamp: 2026-08-29T12:14:32Z
 - Git root: `/Users/vaheedgorgeen/libs/Nyvora`
 - Branch: `codex/nc-m3a-radicle-workflow`
 - Base branch: `main`
@@ -161,11 +161,15 @@ is not a blocker once the private path exists.
 - Existing patch revision before the NC-M3B publication attempt:
   `595013556ee0ef308d69bc899f4ead438fee109f`.
 - The focused NC-M3B commits are local on
-  `codex/nc-m3a-radicle-workflow`; the non-force update attempt at
-  2026-08-29T12:10:00Z failed before any ref mutation because the protected
+  `codex/nc-m3a-radicle-workflow`; the non-force update attempt during the
+  2026-08-29T12:11Z handoff window failed before any ref mutation because the protected
   Mac identity was not available in the Radicle agent. No passphrase was
   requested, read, or handled. The existing patch therefore remains at the
   head and revision above, and ASUS has no new NC-M3B revision to verify.
+- A read-only ASUS query after the failed push still reports the exact private
+  RID, the Mac delegate and ASUS allow-list entry, `allow followed` seeding,
+  and the existing patch head `575ac2629aa67cf18f11064ef46b723c30c1a705`;
+  no new patch ref was observed.
 - No merge into `main` is intended.
 
 ## Rollback
