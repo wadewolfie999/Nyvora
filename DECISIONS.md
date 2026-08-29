@@ -57,12 +57,12 @@ deploy, expose ports, modify identities, or access host credentials.
 
 Deploy only immutable external OCI digests. Use SOPS/age plus systemd
 credentials for persistent secrets and encrypted offsite S3 for recovery.
-GitHub repository `wadewolfie999/Mynyra` is the canonical source-code remote;
+GitHub repository `wadewolfie999/Nyvora` is the canonical source-code remote;
 OCI publication remains separately gated.
 
 ## D-018 — Canonical source-code forge
 
-GitHub repository `wadewolfie999/Mynyra` is the canonical remote and
+GitHub repository `wadewolfie999/Nyvora` is the canonical remote and
 collaboration workflow for Nyvora development. Current work uses GitHub
 branches, commits, pull requests, and Actions through the `origin` remote.
 The existing Radicle project, refs, patches, and handoff records remain

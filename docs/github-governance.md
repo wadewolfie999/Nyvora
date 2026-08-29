@@ -6,6 +6,10 @@ AB-1 makes the corrected architecture package reviewable, mechanically
 validated, environment-scoped, and recoverable through the selected GitHub
 forge. It does not authorize live node deployment or production mutation.
 
+The canonical repository is `wadewolfie999/Nyvora`. GitHub's former
+`wadewolfie999/Mynyra` URL is a provider redirect and is not used as the
+documented authority.
+
 ## Repository and pull requests
 
 - `main` is the protected default branch and durable desired-state branch.

@@ -62,7 +62,7 @@ without separate authorization.
 - Never commit plaintext credentials, private keys, tokens, cookies, or auth
   state. SOPS files must remain encrypted.
 - The canonical remote and collaboration workflow is GitHub repository
-  `wadewolfie999/Mynyra`, configured locally as `origin`. Use focused branches,
+  `wadewolfie999/Nyvora`, configured locally as `origin`. Use focused branches,
   commits, pull requests, and GitHub Actions. Merge `main` only after the
   required review and checks are satisfied.
 - Radicle refs, patches, and handoffs are historical evidence only. Do not

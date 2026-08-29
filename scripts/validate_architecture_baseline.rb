@@ -76,7 +76,7 @@ backup = File.read(File.join(ROOT, ".github/workflows/repository-backup.yml"))
 end
 
 governance = File.read(File.join(ROOT, "docs/github-governance.md"))
-%w[development testing operational CODEOWNERS owner-only].each do |marker|
+%w[development testing operational CODEOWNERS owner-only wadewolfie999/Nyvora].each do |marker|
   fail_check("GitHub governance document is missing #{marker.inspect}") unless governance.include?(marker)
 end
 
