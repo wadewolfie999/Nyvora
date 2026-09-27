@@ -1,5 +1,9 @@
 # Runbook: Collect NC-M3 Preflight Evidence
 
+> Status: historical NC-M3 candidate evidence procedure. Its output is dated
+> operational evidence only and is not architectural-baseline compliance or
+> live authorization.
+
 ## Purpose and authority
 
 `scripts/collect_nc_m3_preflight.rb` performs one bounded OBSERVE collection

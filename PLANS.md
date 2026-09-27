@@ -1,5 +1,10 @@
 # Node Control Execution Plan
 
+> Status: preserved legacy NC-M3 execution-plan view. The corrected
+> architecture baseline and AB-0/AB-1 records control current governance.
+> Entries below remain candidate or historical material until reconciled; they
+> are not proof of architectural-baseline conformance or live authorization.
+
 ## Objective
 
 Build the mature three-node platform with stable identities, evidence-driven

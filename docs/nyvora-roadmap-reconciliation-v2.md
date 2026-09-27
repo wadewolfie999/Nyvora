@@ -1,6 +1,8 @@
 # Nyvora Roadmap Reconciliation v2
 
-Status: approved architecture and repository-only planning baseline.
+Status: superseded candidate reconciliation retained for historical and
+implementation context. The owner-adopted corrected baseline in
+`architecture/` controls current architecture.
 
 This document reconciles the existing Node Control roadmap with the approved
 Nyvora model. It changes desired-state documentation only. It does not prove

@@ -45,5 +45,5 @@ complete by this record.
 
 - Original source: `/Users/vaheedgorgeen/Downloads/Nyvora-Architectural-Baseline-v1.0.docx`
 - Original SHA-256: `e7804e1523e3623835dab2805b3fce5c5a7e7e27312b3964ebcd3efd897caeb5`
-- Corrected SHA-256: `430a6ec021365cd4783b7f3d426f5d5ae53fc95e08ec0d082f140bce1ec808e5`
+- Corrected SHA-256: `f454cae6d5a94ff61c5fdee1b6ea1411cf5b27a6dd596e22ed249d306cf49e4b`
 - Original source file was not modified.

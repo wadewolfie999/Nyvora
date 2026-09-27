@@ -1,6 +1,6 @@
 # GitHub Development and Handoff
 
-GitHub repository `wadewolfie999/Mynyra` is the canonical source-code remote
+GitHub repository `wadewolfie999/Nyvora` is the canonical source-code remote
 for Nyvora. Use the local `origin` remote for current collaboration. Radicle
 refs, patches, and handoff records remain historical evidence and must not be
 updated as part of normal development.
