@@ -53,6 +53,38 @@ action; the repository's governance scripts use Ruby's standard library only.
 GitHub secret scanning and push protection are enabled for the public
 repository, and pull requests run the pinned dependency-review action.
 
+## Observed provider state
+
+On 30 August 2026 the repository was observed as public, with `main` as the
+default branch and `wadewolfie999` as the only direct administrator. The
+effective `main` protection is:
+
+- strict required checks: `go-tests`, `ruby-validation`, and
+  `dependency-review`;
+- pull-request protection enabled with stale-review dismissal, zero required
+  independent approvals for the current owner-only repository, and no code
+  owner-review requirement;
+- administrator enforcement, linear history, and conversation resolution
+  enabled;
+- force-pushes and deletion disabled.
+
+Actions are enabled in `selected` mode with read-only default workflow
+permissions, repository SHA pinning required, GitHub-owned actions allowed,
+verified creators disallowed, and `ruby/setup-ruby@*` as the explicit external
+allowlist pattern. All checked-in action references are full commit SHAs.
+
+Security controls observed enabled are dependency alerts/updates, secret
+scanning, and secret-scanning push protection. Non-provider secret-pattern
+scanning and secret-validity checks remain disabled. The dependency graph
+reported 13 open alerts at this observation: 7 critical, 2 high, and 4
+moderate; AB-1 does not claim remediation.
+
+The `development` environment has no deployment-branch restriction. `testing`
+and `operational` permit protected branches only; none has reviewers, wait
+timers, or deployment secrets configured. The active `Protect version release
+tags` repository ruleset (ID `21828238`) targets `refs/tags/v*`, blocks deletion
+and non-fast-forward updates, and has no bypass actors.
+
 ## Environments
 
 - `development` is the integration environment and may receive branch-scoped

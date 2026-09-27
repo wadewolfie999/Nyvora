@@ -10,9 +10,8 @@ schemas, policies, runbooks, deployment templates, and evidence records.
 ## Current status
 
 **AB-0 — Baseline adoption: complete.** The corrected architectural baseline
-is committed to protected GitHub `main`. **AB-1 — GitHub governance** is in
-progress: its intent is to establish fuller permissions, validation, review,
-environment, and backup controls.
+is committed to protected GitHub `main`. **AB-1 — GitHub governance: complete
+with documented owner-only limitations.**
 
 Repository adoption does not claim live node deployment, credential issuance,
 service health, recovery qualification, or operational autonomy.
